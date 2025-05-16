@@ -28,7 +28,7 @@ dotenv.config()
 app.use(express.urlencoded({ extended: true }))
 
 app.get('/', (req, res) => {
-    res.send('Bem-vindo à minha API!');
+    return res.send('Bem-vindo à minha API!');
 })
 
 app.use('/user', userRouter)
