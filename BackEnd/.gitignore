@@ -18,3 +18,4 @@ dist-ssr
 
 # Arquivos de ambiente
 .env
+.vercel

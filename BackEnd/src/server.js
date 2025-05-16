@@ -20,12 +20,16 @@ const likeMessages = require('./routers/LikesMessages')
 const lecture = require('./routers/LectureRouter')
 const auth = require('./routers/AuthRouter')
 const review = require('./routers/ReviewRouter')
-
 const app = express()
+
 app.use(cors()) // permitir que os navegadores acessem diferentes domíniose
 app.use(express.json())
 dotenv.config()
 app.use(express.urlencoded({ extended: true }))
+
+app.get('/', (req, res) => {
+    res.send('Bem-vindo à minha API!');
+})
 
 app.use('/user', userRouter)
 app.use('/admin', adminRouter)
@@ -45,4 +49,6 @@ app.use('/lectures', lecture)
 app.use('/review', review)
 app.use('/auth', auth)
 
+
 app.listen(port, () => console.log(`Rodando na porta ${port}`))
+module.exports = app
