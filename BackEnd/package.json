@@ -1,14 +1,14 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "../BackEnd/src/server.js",
+  "main": "src/server.js",
   "engines": {
     "node": "14.x"
   },
   "scripts": {
     "build": "js",
     "dev": "nodemon ../BackEnd/src/server.js",
-    "start": "node ../BackEnd/src/server.js"
+    "start": "node src/server.js"
   },
   "keywords": [],
   "author": "",
