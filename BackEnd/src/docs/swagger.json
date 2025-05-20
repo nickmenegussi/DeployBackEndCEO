@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "https://deploy-back-end-ceo.vercel.app/"
+            "url": "https://deploy-back-end-ceo.vercel.app/api-docs"
         }
     ],
     "components": {
