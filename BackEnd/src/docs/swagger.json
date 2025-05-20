@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "http://localhost:3001"
+            "url": "https://deploy-back-end-ceo.vercel.app/"
         }
     ],
     "components": {
