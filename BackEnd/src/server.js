@@ -20,6 +20,8 @@ const likeMessages = require('./routers/LikesMessages')
 const lecture = require('./routers/LectureRouter')
 const auth = require('./routers/AuthRouter')
 const review = require('./routers/ReviewRouter')
+const swaggerUi = require('swagger-ui-express')
+const swaggerDocs = require('./docs/swagger.json')
 const app = express()
 
 app.use(cors()) // permitir que os navegadores acessem diferentes domíniose
@@ -30,7 +32,7 @@ app.use(express.urlencoded({ extended: true }))
 app.get('/', (req, res) => {
     return res.send('Bem-vindo à minha API!');
 })
-
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs))
 app.use('/user', userRouter)
 app.use('/admin', adminRouter)
 app.use('/calendar', calendarRouter)
