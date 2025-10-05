@@ -6,7 +6,6 @@
     "node": "22.x"
   },  
   "scripts": {
-    "build": "js",
     "dev": "nodemon ../BackEnd/src/server.js",
     "start": "node src/server.js"
   },
