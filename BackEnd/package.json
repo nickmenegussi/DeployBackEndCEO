@@ -1,9 +1,14 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "../BackEnd/src/server.js",
+  "main": "src/server.js",
+ "engines": {
+    "node": "22.x"
+  },  
   "scripts": {
-    "start": "nodemon ../BackEnd/src/server.js"
+    "build": "js",
+    "dev": "nodemon ../BackEnd/src/server.js",
+    "start": "node src/server.js"
   },
   "keywords": [],
   "author": "",
@@ -25,5 +30,7 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "websocket": "^1.0.35"
+  } , "devDependencies": {
+    "swagger-jsdoc": "^6.2.8"
   }
 }
