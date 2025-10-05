@@ -37,16 +37,7 @@ const server = http.createServer(app);
 initializerSocket(server);
 
 app.use(
-  cors({
-    origin: [
-      "http://localhost:19006", // dev web se usar
-      "exp://*",
-      "http://localhost:*",
-      "http://192.168.*:*", // mobile dev
-      "https://SEU_DOMINIO_FRONT.com", // prod
-    ],
-    credentials: true,
-  })
+  cors()
 ); // permitir que os navegadores acessem diferentes domíniose
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -75,9 +66,9 @@ app.use("/favorite", favorite);
 app.use("/category", category);
 app.use("/groupOfStudy", groupOfStudy);
 
-app.get("/teste", (req, res) => {
-  res.send("Bem-vindo à API do Fórum!");
-});
+app.get('/', (req, res) => {
+    return res.send('Bem-vindo à minha API!');
+})
 
 server.listen(port, () =>
   console.log(
