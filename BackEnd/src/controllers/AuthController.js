@@ -122,7 +122,7 @@ exports.GenerateOtp = (req, res) => {
                   // });
                   // utilizando o resend para funcionar com a vercel!
                   const { data, error } = await resend.emails.send({
-                    from: "Centro Espírita Online <onboarding@resend.dev>",
+                    from: "Centro Espírita Online <nicolasmramos09@gmail.com>",
                     to: email,
                     subject: "Verificação de duas Etapas",
                     html: `
@@ -146,7 +146,7 @@ exports.GenerateOtp = (req, res) => {
                   if (error) {
                     console.error("Erro ao enviar otp pelo email utilizando resend", error);
                     return res.status(500).json({
-                      message: "Erro ao enviar otp pelo email utilizando resend",
+                      message: "Erro ao enviar otp pelo email.",
                       success: false
                     })
                   }
