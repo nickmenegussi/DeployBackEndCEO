@@ -7,6 +7,8 @@ const connection = mysql.createConnection({
     database: process.env.MYSQL_ADDON_DB,
     port: process.env.MYSQL_ADDON_PORT
 })
+console.log("HOST:", process.env.MYSQL_ADDON_HOST);
+console.log("User:", process.env.MYSQL_ADDON_USER);
 
 connection.connect((err) => {
     if(err){
