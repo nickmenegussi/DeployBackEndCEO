@@ -1,7 +1,7 @@
-const connection = require("../config/db");
+const pool = require("../config/promise");
 
 exports.viewAllLectures = (req, res) => {
-  connection.query(`SELECT * FROM Lecture`, (err, result) => {
+  pool.query(`SELECT * FROM Lecture`, (err, result) => {
     if (err) {
       return res.status(500).json({
         message: "Erro ao se conectar com o servidor.",
@@ -29,7 +29,7 @@ exports.viewAllLectures = (req, res) => {
 exports.viewLecturesById = (req, res) => {
   const { idLecture } = req.params;
 
-  connection.query(
+  pool.query(
     `SELECT * FROM Lecture WHERE idLecture = ?`,
     [idLecture],
     (err, result) => {
@@ -82,7 +82,7 @@ exports.createLecture = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     "SELECT * FROM Lecture where nameLecture = ? AND description = ? AND dateLecture = ? AND link_url = ? AND timeLecture = ? AND video_url  = ?",
     [nameLecture, description, dateLecture, link_url, timeLecture, video_url],
     (err, result) => {
@@ -102,7 +102,7 @@ exports.createLecture = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         `INSERT INTO Lecture (nameLecture,dateLecture,timeLecture, description ,link_url, video_url ) VALUES (?, ?, ?, ?, ?, ?)`,
         [
           nameLecture,
@@ -135,7 +135,7 @@ exports.updateLectureName = (req, res) => {
   const { idLecture } = req.params;
   const { nameLecture } = req.body;
 
-  connection.query(
+  pool.query(
     `SELECT * FROM Lecture WHERE idLecture = ?`,
     [idLecture],
     (err, result) => {
@@ -155,7 +155,7 @@ exports.updateLectureName = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         `UPDATE Lecture SET nameLecture = ? WHERE idLecture = ?`,
         [nameLecture, idLecture],
         (err, result) => {
@@ -190,7 +190,7 @@ exports.updateLectureDate = (req, res) => {
   const { idLecture } = req.params;
   const { dateLecture } = req.body;
 
-  connection.query(
+  pool.query(
     `SELECT * FROM Lecture WHERE idLecture = ?`,
     [idLecture],
     (err, result) => {
@@ -210,7 +210,7 @@ exports.updateLectureDate = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         `UPDATE Lecture SET dateLecture = ? WHERE idLecture = ?`,
         [dateLecture, idLecture],
         (err, result) => {
@@ -245,7 +245,7 @@ exports.updateLectureTime = (req, res) => {
   const { idLecture } = req.params;
   const { timeLecture } = req.body;
 
-  connection.query(
+  pool.query(
     `SELECT * FROM Lecture WHERE idLecture = ?`,
     [idLecture],
     (err, result) => {
@@ -265,7 +265,7 @@ exports.updateLectureTime = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         `UPDATE Lecture SET timeLecture = ? WHERE idLecture = ?`,
         [timeLecture, idLecture],
         (err, result) => {
@@ -300,7 +300,7 @@ exports.updateLectureDescription = (req, res) => {
   const { idLecture } = req.params;
   const { description } = req.body;
 
-  connection.query(
+  pool.query(
     `SELECT * FROM Lecture WHERE idLecture = ?`,
     [idLecture],
     (err, result) => {
@@ -320,7 +320,7 @@ exports.updateLectureDescription = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         `UPDATE Lecture SET description = ? WHERE idLecture = ?`,
         [description, idLecture],
         (err, result) => {
@@ -355,7 +355,7 @@ exports.updateLecturelink_url = (req, res) => {
   const { idLecture } = req.params;
   const { link_url } = req.body;
 
-  connection.query(
+  pool.query(
     `SELECT * FROM Lecture WHERE idLecture = ?`,
     [idLecture],
     (err, result) => {
@@ -375,7 +375,7 @@ exports.updateLecturelink_url = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         `UPDATE Lecture SET link_url = ? WHERE idLecture = ?`,
         [link_url, idLecture],
         (err, result) => {
@@ -410,7 +410,7 @@ exports.updateLectureVideoUrl = (req, res) => {
   const { idLecture } = req.params;
   const { video_url } = req.body;
 
-  connection.query(
+  pool.query(
     `SELECT * FROM Lecture WHERE idLecture = ?`,
     [idLecture],
     (err, result) => {
@@ -430,7 +430,7 @@ exports.updateLectureVideoUrl = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         `UPDATE Lecture SET video_url  = ? WHERE idLecture = ?`,
         [video_url, idLecture],
         (err, result) => {
@@ -464,7 +464,7 @@ exports.updateLectureVideoUrl = (req, res) => {
 exports.deleteLecture = (req, res) => {
   const { idLecture } = req.params;
 
-  connection.query(
+  pool.query(
     `SELECT * FROM Lecture WHERE idLecture = ?`,
     [idLecture],
     (err, result) => {
@@ -484,7 +484,7 @@ exports.deleteLecture = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         `DELETE FROM Lecture WHERE idLecture = ?`,
         [idLecture],
         (err, result) => {

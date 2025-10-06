@@ -1,9 +1,9 @@
-const connection = require("../config/db");
+const pool = require("../config/promise");
 const { getIO } = require("../socket/index");
 
 exports.viewOnlyTopicById = (req, res) => {
   const idTopic = req.params.topicId;
-  connection.query(
+  pool.query(
     "SELECT * FROM Topic where idTopic = ?",
     [idTopic],
     (err, result) => {
@@ -41,7 +41,7 @@ exports.viewOnlyTopicById = (req, res) => {
 };
 
 exports.viewAllTopic = (req, res) => {
-  connection.query("SELECT * FROM Topic ORDER BY created_at DESC", (err, result) => {
+  pool.query("SELECT * FROM Topic ORDER BY created_at DESC", (err, result) => {
     if (err) {
       return res.status(500).json({
         message: "Erro ao se conectar com o servidor.",
@@ -72,7 +72,7 @@ exports.createTopic = async (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     "SELECT * FROM Topic WHERE title = ? AND description = ? ",
     [title, description],
     (err, result) => {
@@ -90,7 +90,7 @@ exports.createTopic = async (req, res) => {
             "Já existe um tópico com o mesmo título e descrição. Por favor, tente novamente.",
           success: false,
         });
-      } connection.query(
+      } pool.query(
           "INSERT INTO Topic(title,description,image, User_idUser, Category_id) VALUES(?, ?, ?,?, ?)",
           [title, description,image, User_idUser, Category_id],
           (err, result) => {
@@ -135,7 +135,7 @@ exports.updateTitle = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     "SELECT * FROM Topic WHERE idTopic = ? and User_idUser = ?",
     [idTopic, User_idUser],
     (err, result) => {
@@ -169,7 +169,7 @@ exports.updateTitle = (req, res) => {
                         SET title = ?
                         WHERE idTopic = ? AND User_idUser = ?
                 `;
-      connection.query(
+      pool.query(
         updateInformation,
         [title, idTopic, User_idUser],
         (err, result) => {
@@ -204,7 +204,7 @@ exports.updateDescription = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     "SELECT * FROM Topic WHERE idTopic = ? and User_idUser = ?",
     [idTopic, User_idUser],
     (err, result) => {
@@ -231,7 +231,7 @@ exports.updateDescription = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         ` UPDATE Topic
             SET description = ?
             WHERE idTopic = ? AND User_idUser = ?`,
@@ -267,7 +267,7 @@ exports.updateTopicImage = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     "SELECT * FROM Topic WHERE idTopic = ? and User_idUser = ?",
     [idTopic, User_idUser],
     (err, result) => {
@@ -300,7 +300,7 @@ exports.updateTopicImage = (req, res) => {
       const updateInformation = `UPDATE Topic
                     SET image = ?
                     WHERE idTopic = ? AND User_idUser = ?`;
-      connection.query(
+      pool.query(
         updateInformation,
         [image, idTopic, User_idUser],
         (errUpdateImgProfile, resultUpdateImgProfile) => {
@@ -332,7 +332,7 @@ exports.deleteTopic = (req, res) => {
       message: "Preencha todos os campos de cadastro",
     });
   }
-  connection.query(
+  pool.query(
     "SELECT * FROM Topic WHERE idTopic = ? WHERE User_idUser = ?",
     [idTopic, User_idUser],
     (err, result) => {
@@ -362,7 +362,7 @@ exports.deleteTopic = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         `DELETE FROM Topic WHERE idTopic = ? AND User_idUser = ?
                 `,
         [idTopic, User_idUser],

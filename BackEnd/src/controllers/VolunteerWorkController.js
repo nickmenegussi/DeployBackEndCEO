@@ -1,7 +1,7 @@
-const connection = require("../config/db")
+const pool = require("../config/promise")
 
 exports.viewVolunteerWork = (req, res) => {
-    connection.query('SELECT * FROM VolunteerWork',(err, result) => {
+    pool.query('SELECT * FROM VolunteerWork',(err, result) => {
         if(err){
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -21,7 +21,7 @@ exports.viewVolunteerWork = (req, res) => {
 exports.viewOnlyVolunteerWork = (req, res) => {
     const idVolunteerWork = req.params.idVolunteerWork
     
-    connection.query('SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', [idVolunteerWork] ,(err, result) => {
+    pool.query('SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', [idVolunteerWork] ,(err, result) => {
         if(err){
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -54,7 +54,7 @@ exports.createVolunteerWork = (req, res) => {
         })
     }
 
-    connection.query('SELECT * FROM VolunteerWork where nameVolunteerWork = ? AND address = ? AND dateVolunteerWork AND work_description = ?', [nameVolunteerWork, address, dateVolunteerWork, work_description], (err, result) => {
+    pool.query('SELECT * FROM VolunteerWork where nameVolunteerWork = ? AND address = ? AND dateVolunteerWork AND work_description = ?', [nameVolunteerWork, address, dateVolunteerWork, work_description], (err, result) => {
         if(err){
             return res.status(500).json({   
                 message: "Erro ao se conectar com o servidor.",
@@ -70,7 +70,7 @@ exports.createVolunteerWork = (req, res) => {
                 data: err
             })
         }
-        connection.query('INSERT INTO VolunteerWork(nameVolunteerWork,address,dateVolunteerWork,work_description) VALUES(?, ?, ?, ?) ',[nameVolunteerWork, address, dateVolunteerWork, work_description], (err, result) => {
+        pool.query('INSERT INTO VolunteerWork(nameVolunteerWork,address,dateVolunteerWork,work_description) VALUES(?, ?, ?, ?) ',[nameVolunteerWork, address, dateVolunteerWork, work_description], (err, result) => {
             if(err){
                 return res.status(500).json({
                     message: "Erro ao se conectar com o servidor.",
@@ -99,7 +99,7 @@ exports.updateNameVolunteerWork = (req, res) => {
         })
     }
 
-    connection.query('SELECT * FROM VolunteerWork where idVolunteerWokr =?', [idVolunteerWork], (err, result) => {
+    pool.query('SELECT * FROM VolunteerWork where idVolunteerWokr =?', [idVolunteerWork], (err, result) => {
         if(err){
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -116,7 +116,7 @@ exports.updateNameVolunteerWork = (req, res) => {
             })
         } 
 
-        connection.query('UPDATE VolunteerWork SET nameVolunteerWork = ? WHERE idVolunteerWork = ?', [nameVolunteerWork, idVolunteerWork], (err, result) => {
+        pool.query('UPDATE VolunteerWork SET nameVolunteerWork = ? WHERE idVolunteerWork = ?', [nameVolunteerWork, idVolunteerWork], (err, result) => {
             if (err) {
                 return res.status(500).json({
                     success: false,
@@ -145,7 +145,7 @@ exports.updateTimeVolunteerWork = (req, res) => {
         })
     }
 
-    connection.query('SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
+    pool.query('SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
         if (err) {
             return res.status(500).json({
                 success: false,
@@ -161,7 +161,7 @@ exports.updateTimeVolunteerWork = (req, res) => {
             })
         }
 
-        connection.query('UPDATE VolunteerWork SET timeVolunteerWork = ? WHERE idVolunteerWork = ?', [timeVolunteerWork, idVolunteerWork], (err, result) => {
+        pool.query('UPDATE VolunteerWork SET timeVolunteerWork = ? WHERE idVolunteerWork = ?', [timeVolunteerWork, idVolunteerWork], (err, result) => {
             if (err) {
                 return res.status(500).json({
                     success: false,
@@ -190,7 +190,7 @@ exports.updateNameVolunteerWork = (req, res) => {
         })
     }
 
-    connection.query('SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
+    pool.query('SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
         if (err) {
             return res.status(500).json({
                 success: false,
@@ -206,7 +206,7 @@ exports.updateNameVolunteerWork = (req, res) => {
             })
         }
 
-        connection.query('UPDATE VolunteerWork SET nameVolunteerWork = ? WHERE idVolunteerWork = ?', [nameVolunteerWork, idVolunteerWork], (err, result) => {
+        pool.query('UPDATE VolunteerWork SET nameVolunteerWork = ? WHERE idVolunteerWork = ?', [nameVolunteerWork, idVolunteerWork], (err, result) => {
             if (err) {
                 return res.status(500).json({
                     success: false,
@@ -235,7 +235,7 @@ exports.updateAddressVolunteerWork = (req, res) => {
         })
     }
 
-    connection.query('SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
+    pool.query('SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
         if (err) {
             return res.status(500).json({
                 success: false,
@@ -251,7 +251,7 @@ exports.updateAddressVolunteerWork = (req, res) => {
             })
         }
 
-        connection.query('UPDATE VolunteerWork SET address = ? WHERE idVolunteerWork = ?', [address, idVolunteerWork], (err, result) => {
+        pool.query('UPDATE VolunteerWork SET address = ? WHERE idVolunteerWork = ?', [address, idVolunteerWork], (err, result) => {
             if (err) {
                 return res.status(500).json({
                     success: false,
@@ -280,7 +280,7 @@ exports.updateDateVolunteerWork = (req, res) => {
         })
     }
 
-    connection.query('SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
+    pool.query('SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
         if (err) {
             return res.status(500).json({
                 success: false,
@@ -296,7 +296,7 @@ exports.updateDateVolunteerWork = (req, res) => {
             })
         }
 
-        connection.query('UPDATE VolunteerWork SET dateVolunteerWork = ? WHERE idVolunteerWork = ?', [dateVolunteerWork, idVolunteerWork], (err, result) => {
+        pool.query('UPDATE VolunteerWork SET dateVolunteerWork = ? WHERE idVolunteerWork = ?', [dateVolunteerWork, idVolunteerWork], (err, result) => {
             if (err) {
                 return res.status(500).json({
                     success: false,
@@ -325,7 +325,7 @@ exports.updateWorkDescriptionVolunteerWork = (req, res) => {
         })
     }
 
-    connection.query('SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
+    pool.query('SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
         if (err) {
             return res.status(500).json({
                 success: false,
@@ -341,7 +341,7 @@ exports.updateWorkDescriptionVolunteerWork = (req, res) => {
             })
         }
 
-        connection.query('UPDATE VolunteerWork SET work_description = ? WHERE idVolunteerWork = ?', [work_description, idVolunteerWork], (err, result) => {
+        pool.query('UPDATE VolunteerWork SET work_description = ? WHERE idVolunteerWork = ?', [work_description, idVolunteerWork], (err, result) => {
             if (err) {
                 return res.status(500).json({
                     success: false,
@@ -363,7 +363,7 @@ exports.updateWorkDescriptionVolunteerWork = (req, res) => {
 exports.deleteVolunteerWork = (req, res) => {
     const idVolunteerWork = req.params.idVolunteerWork
 
-    connection.query('SELECT * FROM VolunteerWork where idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
+    pool.query('SELECT * FROM VolunteerWork where idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
         if(err){
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -379,7 +379,7 @@ exports.deleteVolunteerWork = (req, res) => {
                 data: err
             })
         } else {
-            connection.query('DELETE FROM VolunteerWork where idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
+            pool.query('DELETE FROM VolunteerWork where idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
                 if(err){
                     return res.status(500).json({
                         message: "Erro ao se conectar com o servidor.",

@@ -1,7 +1,7 @@
-const connection = require("../config/db")
+const pool = require("../config/promise")
 
 exports.viewReserves = (req, res) => {
-    connection.query('SELECT * FROM Reserves', (err, result) => {
+    pool.query('SELECT * FROM Reserves', (err, result) => {
         if(err){
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -24,7 +24,7 @@ exports.viewReservesByUser = (req, res) => {
     const idUser = req.params.userId
     const userData = req.data
     
-    connection.query(`SELECT * 
+    pool.query(`SELECT * 
         FROM Reserves r, Cart c, User u, Book b
         WHERE r.Cart_idCart = c.idCart
         AND u.idUser = c.User_idUser
@@ -74,7 +74,7 @@ exports.createReserves = (req, res) => {
     }
 
     // Primeiro verifica se o carrinho existe e se a ação é de empréstimo, se não, quer dizer que depois ele pode cadastrar se a ação for de empréstimo
-    connection.query(`
+    pool.query(`
             SELECT * FROM Cart where idCart = ?
             
         `, [Cart_idCart], (err, result) => {
@@ -101,7 +101,7 @@ exports.createReserves = (req, res) => {
             else {
                 // verificar duplicidade de empréstimos
                 if(result[0].action === 'reserva'){
-                    connection.query('SELECT Cart_idCart FROM Reserves where Cart_idCart = ?', [Cart_idCart], (err, result) => {
+                    pool.query('SELECT Cart_idCart FROM Reserves where Cart_idCart = ?', [Cart_idCart], (err, result) => {
                         if(err){
                             return res.status(500).json({
                                 message: "Erro ao verificar reservas realizados.",
@@ -119,7 +119,7 @@ exports.createReserves = (req, res) => {
                             })
                         }
 
-                        connection.query('INSERT INTO Reserves(Cart_idCart) VALUES(?) ',[Cart_idCart], (errInsert, resultInsert) => {
+                        pool.query('INSERT INTO Reserves(Cart_idCart) VALUES(?) ',[Cart_idCart], (errInsert, resultInsert) => {
                             if(errInsert){
                                 return res.status(500).json({
                                     message: "Erro ao reservar livro.",
@@ -153,7 +153,7 @@ exports.deleteReserve = (req, res) => {
     const idUser = req.data.id
     const userData = req.data
 
-    connection.query(`SELECT * FROM Reserve where idReserved = ?`, [idReserved], (err, result) => {
+    pool.query(`SELECT * FROM Reserve where idReserved = ?`, [idReserved], (err, result) => {
         if(err){
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -178,7 +178,7 @@ exports.deleteReserve = (req, res) => {
                 data: err
             })  
         }}
-            connection.query(`DELETE r FROM Reserves r
+            pool.query(`DELETE r FROM Reserves r
                 JOIN Cart c on r.Cart_idCart = c.idCart
                 JOIN User u on c.User_idUser = ? u.idUser
                 WHERE r.idReserved = ? AND u.idUser = ?`, [idReserved, idUser], (err, result) => {

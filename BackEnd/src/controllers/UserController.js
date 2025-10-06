@@ -1,4 +1,3 @@
-const connection = require("../config/db");
 const pool = require("../config/promise");
 const bcrypt = require("bcrypt");
 const cloudinary = require('../config/cloudinary')
@@ -19,7 +18,7 @@ exports.viewOnlyUser = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     "SELECT * FROM User where idUser = ?",
     [idUser],
     (err, result) => {
@@ -49,7 +48,7 @@ exports.viewOnlyUser = (req, res) => {
 };
 
 exports.viewAllUser = (req, res) => {
-  connection.query(`SELECT * FROM User`, (err, result) => {
+  pool.query(`SELECT * FROM User`, (err, result) => {
     if (err) {
       return res.status(500).json({
         message: "Erro ao se conectar com o servidor.",
@@ -77,7 +76,7 @@ exports.register = async (req, res) => {
     });
   }
   const hash_password = await bcrypt.hash(password, 10);
-  connection.query(
+  pool.query(
     "SELECT * FROM User where nameUser = ? AND email = ?",
     [nameUser, email],
     (err, result) => {
@@ -96,7 +95,7 @@ exports.register = async (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         "SELECT idUser FROM User where email = ?",
         [email],
         (reqIsEmailAlreadyCreated, resEmailAlreadyCreated) => {
@@ -115,7 +114,7 @@ exports.register = async (req, res) => {
             })
           }
 
-          connection.query(
+          pool.query(
             "INSERT INTO User(nameUser,email, password ,image_profile, status_permission) VALUES(?, ?, ?, ?, ?)",
             [nameUser, email, hash_password, image_profile, "User"],
             (err, result) => {
@@ -151,7 +150,7 @@ exports.updateUser = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     "SELECT * FROM User WHERE idUser = ?",
     [idUser],
     (err, result) => {
@@ -172,7 +171,7 @@ exports.updateUser = (req, res) => {
         });
       } else {
         const updateInformation = "UPDATE User set email = ? where idUser = ?";
-        connection.query(updateInformation, [email, idUser], (err, result) => {
+        pool.query(updateInformation, [email, idUser], (err, result) => {
           if (result) {
             return res.status(200).json({
               message: "Sucesso ao alterar informações do usuário.",
@@ -204,7 +203,7 @@ exports.updateUserName = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     "SELECT * FROM User WHERE idUser = ?",
     [idUser],
     (err, result) => {
@@ -222,7 +221,7 @@ exports.updateUserName = (req, res) => {
           message: "Usuário não encontrado.",
         });
       }
-      connection.query(
+      pool.query(
         "UPDATE User SET nameUser = ? WHERE idUser = ?",
         [nameUser, idUser],
         (err, result) => {
@@ -263,7 +262,7 @@ exports.updateUserPassword = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     "SELECT * FROM User WHERE idUser = ?",
     [idUser],
     async (err, result) => {
@@ -306,7 +305,7 @@ exports.updateUserPassword = (req, res) => {
       const hashPassword = await bcrypt.hash(newPassword, 15);
 
       const updateInformation = "UPDATE User set password = ? where idUser = ?";
-      connection.query(
+      pool.query(
         updateInformation,
         [hashPassword, idUser],
         (errPassword, resultPassword) => {
@@ -319,7 +318,7 @@ exports.updateUserPassword = (req, res) => {
           }
 
           if (resultPassword.affectedRows > 0) {
-            connection.query(
+            pool.query(
               "SELECT * FROM USER WHERE idUser = ?",
               [idUser],
               (errUpdatePassword, resultUpdatePassword) => {
@@ -377,7 +376,7 @@ exports.updateUserImageProfile = async (req, res) => {
 
     const imageUrl = result.secure_url
 
-    connection.query(
+    pool.query(
       "SELECT * FROM User WHERE idUser = ?",
       [idUser],
       (err, userResult) => {
@@ -398,7 +397,7 @@ exports.updateUserImageProfile = async (req, res) => {
 
         // Atualiza imagem de perfil no banco
         const updateQuery = "UPDATE User SET image_profile = ? WHERE idUser = ?";
-        connection.query(
+        pool.query(
           updateQuery,
           [imageUrl, idUser],
           (errUpdate, updateResult) => {
@@ -451,7 +450,7 @@ exports.deleteAccountUser = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     `SELECT * FROM User WHERE idUser = ? WHERE status_permission = 'User'`,
     [idUser],
     (err, result) => {
@@ -471,7 +470,7 @@ exports.deleteAccountUser = (req, res) => {
           data: err,
         });
       } else {
-        connection.query(
+        pool.query(
           "DELETE FROM User WHERE idUser = ?",
           [idUser],
           (err, result) => {
@@ -515,7 +514,7 @@ exports.updateUserForgotPassword = async (req, res) => {
       });
     }
 
-    const [user] = await pool.query("SELECT * FROM user Where email = ?", [
+    const [user] = await pool.promise().query("SELECT * FROM user Where email = ?", [
       email,
     ]);
 
@@ -523,7 +522,7 @@ exports.updateUserForgotPassword = async (req, res) => {
       return res.status(404).json({ message: "Nenhum usuário encontrado." });
     }
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    const [updateForgotPassword] = await pool.query(
+    const [updateForgotPassword] = await pool.promise().query(
       "UPDATE USER SET password = ? WHERE idUser = ?",
       [hashedPassword, user[0].idUser]
     );

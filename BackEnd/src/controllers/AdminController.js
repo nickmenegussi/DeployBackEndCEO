@@ -1,7 +1,7 @@
-const connection = require('../config/db')
+const pool = require('../config/promise')
 
 exports.ViewAllAdmins = (req,res) => {
-    connection.query(`SELECT * FROM User WHERE status_permission = 'Admin'`, (err, result) => {
+    pool.query(`SELECT * FROM User WHERE status_permission = 'Admin'`, (err, result) => {
         if(err){
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -37,7 +37,7 @@ exports.ViewOnlyAdminByUser = (req,res) => {
         })
     }
 
-    connection.query(`SELECT * FROM User WHERE idUser = ? and status_permission = 'Admin'`, [idUser] ,(err, result) => {
+    pool.query(`SELECT * FROM User WHERE idUser = ? and status_permission = 'Admin'`, [idUser] ,(err, result) => {
         if(err){
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -76,7 +76,7 @@ exports.updateUserPermission = (req,res) => {
     } 
 
     
-    connection.query(`SELECT * FROM User WHERE idUser = ? and (status_permission = 'User' or status_permission = 'Admin')`, [idUser] ,(err, result) => {
+    pool.query(`SELECT * FROM User WHERE idUser = ? and (status_permission = 'User' or status_permission = 'Admin')`, [idUser] ,(err, result) => {
         if(err){
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -92,7 +92,7 @@ exports.updateUserPermission = (req,res) => {
             })
         }   
          
-            connection.query(`UPDATE User SET status_permission = ? WHERE idUser = ? `, [status_permission ,idUser] , (err, result) => {
+            pool.query(`UPDATE User SET status_permission = ? WHERE idUser = ? `, [status_permission ,idUser] , (err, result) => {
                 if (err) {
                     return res.status(500).json({
                         success: false,

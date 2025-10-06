@@ -1,5 +1,4 @@
-const connection = require("../config/db");
-const db = require("../config/promise");
+const pool = require("../config/promise");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
@@ -17,7 +16,7 @@ exports.login = async (req, res) => {
 
   try {
     const query = "SELECT idUser, email, password, status_permission, image_profile FROM User WHERE email = ?";
-    const [result] = await db.query(query, [email]);
+    const [result] = await pool.promise().query(query, [email]);
 
     if (result.length === 0) {
       return res.status(400).json({
@@ -55,7 +54,7 @@ exports.login = async (req, res) => {
       success: false,
       body: null
     })
-  }
+  } 
 };
 
 exports.GenerateOtp = (req, res) => {
@@ -67,7 +66,7 @@ exports.GenerateOtp = (req, res) => {
       message: "Preencha todos os campos de cadastro",
     });
   } else {
-    connection.query(
+    pool.query(
       "SELECT email FROM User WHERE email = ?",
       [email],
       async (err, result) => {
@@ -95,7 +94,7 @@ exports.GenerateOtp = (req, res) => {
           const expiresAt = new Date();
           expiresAt.setMinutes(expiresAt.getMinutes() + 5);
 
-          connection.query(
+          pool.query(
             "INSERT INTO OTP(email, otp, expiresAt) VALUES(?, ?, ?)",
             [email, otp, expiresAt],
             (err, result) => {
@@ -137,7 +136,7 @@ Atenciosamente,
 Equipe [Centro Espírita Online]`,
                   });
 
-                  connection.query(
+                  pool.query(
                     "SELECT * FROM  OTP where email = ?",
                     [email],
                     (errSelect, resultSelect) => {
@@ -178,7 +177,7 @@ exports.VerificationOtp = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     "SELECT * FROM Otp where email = ? and otp = ?",
     [email, otp],
     (err, result) => {
@@ -219,7 +218,7 @@ exports.VerificationOtp = (req, res) => {
 };
 
 exports.viewOtp = (req, res) => {
-  connection.query("SELECT * FROM OTP", (err, result) => {
+  pool.query("SELECT * FROM OTP", (err, result) => {
     if (err) {
       return res.status(500).json({
         message: "Erro ao se conectar com o servidor.",

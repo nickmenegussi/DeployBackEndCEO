@@ -4,7 +4,8 @@ const cors = require("cors");
 const http = require("http");
 const { initializerSocket, getIO } = require("./socket/index");
 const dotenv = require("dotenv");
-const port = parseInt(process.env.MYSQL_ADDON_PORT) || 3001;
+const isDev = process.env.NODE_ENV !== "production"
+const port = isDev ? process.env.PORT : parseInt(process.env.MYSQL_ADDON_PORT)
 
 const userRouter = require("./routers/UserRouter");
 const adminRouter = require("./routers/AdminRouter");
@@ -26,20 +27,25 @@ const review = require("./routers/ReviewRouter");
 const category = require("./routers/CategoryRouter");
 const favorite = require("./routers/FavoriteRouter");
 const path = require("path");
-const swaggerUi = require("swagger-ui-express");
 const groupOfStudy = require("./routers/GroupOfStudyRouter");
-const swaggerDocs = require("./docs/swagger.json");
 const { group } = require("console");
+const swaggerUi = require("swagger-ui-express");
+const swaggerDocs = require("./docs/swagger.json");
 
 const app = express();
 
-app.use(
-  cors()
-); // permitir que os navegadores acessem diferentes domíniose
+app.use(cors()); // permitir que os navegadores acessem diferentes domíniose
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use('/swagger-ui', express.static('node_modules/swagger-ui-dist/'));
 
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs, {
+  customCssUrl: '/swagger-ui/swagger-ui.css',
+  customJs: [
+    '/swagger-ui/swagger-ui-bundle.js',
+    '/swagger-ui/swagger-ui-standalone-preset.js'
+  ]
+}));
 app.use("/uploads", express.static("./uploads"));
 app.use("/user", userRouter);
 app.use("/admin", adminRouter);

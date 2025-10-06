@@ -1,7 +1,7 @@
-const connection = require("../config/db")
+const pool = require("../config/promise")
 
 exports.viewAllFacilitadores = (req, res) => {
-    connection.query('SELETC * FROM Facilitadores', (err, result) => {
+    pool.query('SELETC * FROM Facilitadores', (err, result) => {
         if(err){
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -21,7 +21,7 @@ exports.viewAllFacilitadores = (req, res) => {
 exports.viewOnlyFacilitadorById = (req, res) => {
     const User_idUser = req.params.User_idUser
 
-    connection.query(`SELECT * 
+    pool.query(`SELECT * 
         FROM Facilitadores f
         JOIN User u ON u.idUser = f.User_idUser
         WHERE f.User_idUser = ?`, [User_idUser], (err, result) => {
@@ -50,7 +50,7 @@ exports.viewOnlyFacilitadorById = (req, res) => {
 
 
 exports.viewFacilitadoresByGroupoESDE = (req, res) => {
-    connection.query(`SELECT * FROM Facilitadores where category = 'ESDE'`, (err, result) => {
+    pool.query(`SELECT * FROM Facilitadores where category = 'ESDE'`, (err, result) => {
         if(err){
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -75,7 +75,7 @@ exports.viewFacilitadoresByGroupoESDE = (req, res) => {
 }
 
 exports.viewFacilitadoresByGroupoCIEDE = (req, res) => {
-    connection.query(`SELECT * FROM Facilitadores where category = 'CIEDE'`, (err, result) => {
+    pool.query(`SELECT * FROM Facilitadores where category = 'CIEDE'`, (err, result) => {
         if(err){
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -100,7 +100,7 @@ exports.viewFacilitadoresByGroupoCIEDE = (req, res) => {
 }
 
 exports.viewFacilitadoresByGroupoMEDIUNICO = (req, res) => {
-    connection.query(`SELECT * FROM Facilitadores where category = 'MEDIUNIDADE'`, (err, result) => {
+    pool.query(`SELECT * FROM Facilitadores where category = 'MEDIUNIDADE'`, (err, result) => {
         if(err){
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -135,7 +135,7 @@ exports.createFacilitadores = (req, res) => {
         })
     }
 
-    connection.query(`INSERT INTO Facilitadores(User_idUser, description, apelido, espiritaSinceTime, category, memberSinceWhen) VALUES (?, ?, ?, ?, ?, ?)`, [User_idUser, description, apelido, espiritaSinceTime, category, memberSinceWhen], (err, result) => {
+    pool.query(`INSERT INTO Facilitadores(User_idUser, description, apelido, espiritaSinceTime, category, memberSinceWhen) VALUES (?, ?, ?, ?, ?, ?)`, [User_idUser, description, apelido, espiritaSinceTime, category, memberSinceWhen], (err, result) => {
         if(err){
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -155,7 +155,7 @@ exports.createFacilitadores = (req, res) => {
 exports.deleteFacilitadores = (req, res) => {
     const idFacilitador = req.params.idFacilitador
 
-    connection.query('SELECT * FROM Facilitadores WHERE idFacilitador = ?', [idFacilitador], (err, result) => {
+    pool.query('SELECT * FROM Facilitadores WHERE idFacilitador = ?', [idFacilitador], (err, result) => {
         if(err){
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -171,7 +171,7 @@ exports.deleteFacilitadores = (req, res) => {
                 data: err
             })
         }
-        connection.query(`DELETE FROM Facilitadores WHERE idFacilitador = ?`, [idFacilitador], (err, result) => {
+        pool.query(`DELETE FROM Facilitadores WHERE idFacilitador = ?`, [idFacilitador], (err, result) => {
             if(err){
                 return res.status(500).json({
                     message: "Erro ao se conectar com o servidor.",

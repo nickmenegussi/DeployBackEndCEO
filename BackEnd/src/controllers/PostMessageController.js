@@ -3,7 +3,7 @@ const pool = require("../config/promise");
 // Obter todos os posts
 exports.getAllPosts = async (req, res) => {
   try {
-    const [rows] = await pool.query(`
+    const [rows] = await pool.promise().query(`
       SELECT
         p.idPost,
         p.content,
@@ -66,7 +66,7 @@ exports.createPost = async (req, res) => {
 exports.getPostById = async (req, res) => {
   const { postId } = req.params;
   try {
-    const [rows] = await pool.query(
+    const [rows] = await pool.promise().query(
       `
       SELECT
           p.idPost,
@@ -103,7 +103,7 @@ exports.toggleLike = async (req, res) => {
   const userId = req.data.id; // ID do usuário autenticado
 
   try {
-    const [existingLike] = await pool.query(
+    const [existingLike] = await pool.promise().query(
       "SELECT idLikes FROM Likes WHERE Post_idPost = ? AND User_idUser = ?",
       [postId, userId]
     );
@@ -137,7 +137,7 @@ exports.updateContentPost = (req, res) => {
   const User_idUser = req.data.id;
   const { content } = req.body;
 
-  connection.query(
+  pool.query(
     "SELECT * FROM Post WHERE idPost = ?",
     [idPost],
     (errUpdate, resultUpdate) => {
@@ -155,7 +155,7 @@ exports.updateContentPost = (req, res) => {
           message: `A postagem não foi encontrada para ser atualizada!`,
         });
       }
-      connection.query(
+      pool.query(
         `UPDATE Post SET content = ? WHERE idPost = ? AND User_idUser = ?`,
         [content, idPost, User_idUser],
         (err, result) => {
@@ -182,7 +182,7 @@ exports.updateImagePost = (req, res) => {
   const User_idUser = req.data.id;
   const image = req.file ? req.file.filename : null;
 
-  connection.query(
+  pool.query(
     "SELECT * FROM Post WHERE idPost = ?",
     [idPost],
     (err, result) => {
@@ -200,7 +200,7 @@ exports.updateImagePost = (req, res) => {
           message: `A postagem não foi encontrada para ser atualizada!`,
         });
       }
-      connection.query(
+      pool.query(
         `UPDATE Post SET image = ? WHERE idPost = ? AND User_idUser = ?`,
         [image, idPost, User_idUser],
         (errUpdate, resultUpdate) => {
@@ -226,7 +226,7 @@ exports.deletePost = (req, res) => {
   const idPost = req.params.postId;
   const User_idUser = req.data.id;
 
-  connection.query(
+  pool.query(
     "SELECT * FROM Post WHERE idPost = ?",
     [idPost],
     (err, result) => {
@@ -251,7 +251,7 @@ exports.deletePost = (req, res) => {
           message: "Você não tem permissão para excluir esta postagem.",
         });
       }
-      connection.query(
+      pool.query(
         `DELETE FROM Post WHERE idPost = ? AND User_idUser = ?`,
         [idPost, User_idUser],
         (err, result) => {

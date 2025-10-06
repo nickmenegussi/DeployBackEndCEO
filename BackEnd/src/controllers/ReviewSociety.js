@@ -1,4 +1,4 @@
-const connection = require('../config/db')
+const pool = require('../config/promise')
 
 exports.CreateReviewSociety = (req, res) => {
     const { descriptionReview, ratingReview, userId } = req.body
@@ -9,7 +9,7 @@ exports.CreateReviewSociety = (req, res) => {
         })
     }
 
-    connection.query(`SELECT * FROM ReviewSociety WHERE descriptionReview = ? and ratingReview and userId = ?`, [descriptionReview, ratingReview, userId], (err, result) => {
+    pool.query(`SELECT * FROM ReviewSociety WHERE descriptionReview = ? and ratingReview and userId = ?`, [descriptionReview, ratingReview, userId], (err, result) => {
         if(err){
             return res.status(500).json({
                 message: 'Erro ao se conectar com o servidor.',
@@ -25,7 +25,7 @@ exports.CreateReviewSociety = (req, res) => {
             })
         }
 
-        connection.query(`INSERT INTO ReviewSociety (descriptionReview, ratingReview, userId) VALUES (?, ?, ?)`, [descriptionReview, ratingReview, userId], (err, result) => {
+        pool.query(`INSERT INTO ReviewSociety (descriptionReview, ratingReview, userId) VALUES (?, ?, ?)`, [descriptionReview, ratingReview, userId], (err, result) => {
             if(err){
                 return res.status(500).json({
                     message: 'Erro ao se conectar com o servidor.',
@@ -46,7 +46,7 @@ exports.CreateReviewSociety = (req, res) => {
 exports.ViewReviewSociety = (req, res) => {
     const sortOrder = req.query.sortOrder === 'newSet' ? 'DESC' : 'ASC'
 
-    connection.query(`
+    pool.query(`
         SELECT idReviewSociety, descriptionReview, ratingReview, userId, create_at, nameUser, image_profile FROM ReviewSociety as r
         INNER JOIN User as u on u.idUser = r.userId
         ORDER BY create_at ${sortOrder}
@@ -78,7 +78,7 @@ exports.UpdateReviewSociety = (req, res) => {
         })
     }
 
-    connection.query('SELECT * FROM ReviewSociety WHERE idReviewSociety = ?', [idReviewSociety], (err, result) => {
+    pool.query('SELECT * FROM ReviewSociety WHERE idReviewSociety = ?', [idReviewSociety], (err, result) => {
         if(err){
             return res.status(500).json({
                 message: 'Erro ao se conectar com o servidor.',
@@ -94,7 +94,7 @@ exports.UpdateReviewSociety = (req, res) => {
                 data: err
             })
         }
-        connection.query('Update ReviewSociety SET descriptionReview = ?, ratingReview = ? WHERE idReviewSociety = ? AND userId = ?', [descriptionReview, ratingReview ,idReviewSociety, userId], (err, result) => {
+        pool.query('Update ReviewSociety SET descriptionReview = ?, ratingReview = ? WHERE idReviewSociety = ? AND userId = ?', [descriptionReview, ratingReview ,idReviewSociety, userId], (err, result) => {
             if(err){
                 return res.status(500).json({
                     message: 'Erro ao se conectar com o servidor.',
@@ -124,7 +124,7 @@ exports.DeleteReviewSociety = (req, res) => {
         })
     }
 
-    connection.query('SELECT * FROM ReviewSociety WHERE idReviewSociety = ? and userId = ?', [idReviewSociety, userId], (err, result) => {
+    pool.query('SELECT * FROM ReviewSociety WHERE idReviewSociety = ? and userId = ?', [idReviewSociety, userId], (err, result) => {
         if(err){
             return res.status(500).json({
                 message: 'Erro ao se conectar com o servidor.',
@@ -139,7 +139,7 @@ exports.DeleteReviewSociety = (req, res) => {
                 data: err
             })
         }
-        connection.query('DELETE FROM ReviewSociety WHERE idReviewSociety = ? AND userId = ?', [idReviewSociety, userId], (err, result) => {
+        pool.query('DELETE FROM ReviewSociety WHERE idReviewSociety = ? AND userId = ?', [idReviewSociety, userId], (err, result) => {
             if(err){
                 return res.status(500).json({
                     message: 'Erro ao se conectar com o servidor.',

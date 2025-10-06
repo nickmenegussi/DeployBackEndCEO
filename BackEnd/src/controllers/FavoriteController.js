@@ -1,9 +1,9 @@
-const connection = require("../config/db");
+const pool = require("../config/promise");
 
 exports.viewAllFavoritesByUser = (req, res) => {
   const User_idUser = req.data.id;
 
-  connection.query(
+  pool.query(
     `SELECT idFavorite, User_idUser, Book_idLibrary, nameBook, authorBook, image, tagsBook, bookCategory, f.date_at_create
 FROM Favorite f, Book b, User u
 WHERE b.idLibrary = f.Book_idLibrary
@@ -47,7 +47,7 @@ exports.createFavoriteBook = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     "SELECT * FROM Favorite where User_idUser = ? and Book_idLibrary = ?",
     [User_idUser, Book_idLibrary],
     (err, result) => {
@@ -66,7 +66,7 @@ exports.createFavoriteBook = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         "INSERT INTO Favorite(User_idUser, Book_idLibrary) VALUES(?, ?)",
         [User_idUser, Book_idLibrary],
         (err, result) => {

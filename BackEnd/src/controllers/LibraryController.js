@@ -1,7 +1,7 @@
-const connection = require("../config/db")
+const pool = require("../config/promise")
 
 exports.viewAllBooks = (req, res) => {
-    connection.query('SELECT * FROM Book',(err, result) => {
+    pool.query('SELECT * FROM Book',(err, result) => {
         if(err){
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -20,7 +20,7 @@ exports.viewAllBooks = (req, res) => {
 
 exports.viewOnlyOneBook = (req, res) => {
     const idLibrary = req.params.LibraryId
-    connection.query('SELECT * FROM Book where idLibrary = ?', [idLibrary] ,(err, result) => {
+    pool.query('SELECT * FROM Book where idLibrary = ?', [idLibrary] ,(err, result) => {
         if(err){
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -77,7 +77,7 @@ exports.createBook = (req, res) => {
         })
     }  
 
-        connection.query('SELECT * FROM Book WHERE status_Available = ? AND image = ? AND bookCategory = ? AND namebook = ? AND authorBook = ? AND tagsBook = ? AND overviewBook = ? AND curiosityBook = ?',
+        pool.query('SELECT * FROM Book WHERE status_Available = ? AND image = ? AND bookCategory = ? AND namebook = ? AND authorBook = ? AND tagsBook = ? AND overviewBook = ? AND curiosityBook = ?',
   [status_Available, image, bookCategory, namebook, authorBook, tagsBook, overviewBook, curiosityBook], (err, result) => {
             if(err){
                 return res.status(500).json({
@@ -92,7 +92,7 @@ exports.createBook = (req, res) => {
                     message: 'Esse livro já possui um cadastro, por favor, tente outras informações.'
                 })
             }
-            connection.query('INSERT INTO Book(namebook,authorBook, image ,overviewBook,curiosityBook ,tagsBook, bookQuantity ,status_Available, bookCategory) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?) ',[namebook, authorBook, image, overviewBook,curiosityBook ,tagsBook, bookQuantity ,status_Available, bookCategory], (err, result) => {
+            pool.query('INSERT INTO Book(namebook,authorBook, image ,overviewBook,curiosityBook ,tagsBook, bookQuantity ,status_Available, bookCategory) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?) ',[namebook, authorBook, image, overviewBook,curiosityBook ,tagsBook, bookQuantity ,status_Available, bookCategory], (err, result) => {
                 if(err){
                     return res.status(500).json({
                         message: "Erro ao se conectar com o servidor.",
@@ -123,7 +123,7 @@ exports.updateNameBook = (req, res) => {
         })
     }
 
-    connection.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
+    pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
         if (err) {
             return res.status(500).json({
                 success: false,
@@ -139,7 +139,7 @@ exports.updateNameBook = (req, res) => {
             })
         }
 
-        connection.query('UPDATE Book SET nameBook = ? WHERE idLibrary = ?', [nameBook, idLibrary], (err, result) => {
+        pool.query('UPDATE Book SET nameBook = ? WHERE idLibrary = ?', [nameBook, idLibrary], (err, result) => {
             if(err) {
                 return res.status(500).json({
                     success: false,
@@ -168,7 +168,7 @@ exports.updateAuthorBook = (req, res) => {
         })
     }
 
-    connection.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
+    pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
         if (err) {
             return res.status(500).json({
                 success: false,
@@ -184,7 +184,7 @@ exports.updateAuthorBook = (req, res) => {
             })
         }
 
-        connection.query('UPDATE Book SET author = ? WHERE idLibrary = ?', [authorBook, idLibrary], (err, result) => {
+        pool.query('UPDATE Book SET author = ? WHERE idLibrary = ?', [authorBook, idLibrary], (err, result) => {
             if (err) {
                 return res.status(500).json({
                     success: false,
@@ -213,7 +213,7 @@ exports.updateTagBook = (req, res) => {
         })
     }
 
-    connection.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
+    pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
         if (err) {
             return res.status(500).json({
                 success: false,
@@ -229,7 +229,7 @@ exports.updateTagBook = (req, res) => {
             })
         }
 
-        connection.query('UPDATE Book SET tagsBook = ? WHERE idLibrary = ?', [tagsBook, idLibrary], (err, result) => {
+        pool.query('UPDATE Book SET tagsBook = ? WHERE idLibrary = ?', [tagsBook, idLibrary], (err, result) => {
             if (err) {
                 return res.status(500).json({
                     success: false,
@@ -259,7 +259,7 @@ exports.updateOverView = (req, res) => {
         })
     }
 
-    connection.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
+    pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
         if (err) {
             return res.status(500).json({
                 success: false,
@@ -275,7 +275,7 @@ exports.updateOverView = (req, res) => {
             })
         }
 
-        connection.query('UPDATE Book SET overviewBook = ? WHERE idLibrary = ?', [overviewBook, idLibrary], (err, result) => {
+        pool.query('UPDATE Book SET overviewBook = ? WHERE idLibrary = ?', [overviewBook, idLibrary], (err, result) => {
             if (err) {
                 return res.status(500).json({
                     success: false,
@@ -305,7 +305,7 @@ exports.updateCuriosityBook = (req, res) => {
         })
     }
 
-    connection.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
+    pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
         if (err) {
             return res.status(500).json({
                 success: false,
@@ -321,7 +321,7 @@ exports.updateCuriosityBook = (req, res) => {
             })
         }
 
-        connection.query('UPDATE Book SET curiosityBook = ? WHERE idLibrary = ?', [curiosityBook, idLibrary], (err, result) => {
+        pool.query('UPDATE Book SET curiosityBook = ? WHERE idLibrary = ?', [curiosityBook, idLibrary], (err, result) => {
             if (err) {
                 return res.status(500).json({
                     success: false,
@@ -350,7 +350,7 @@ exports.updateBookQuantity = (req, res) => {
         })
     }
 
-    connection.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
+    pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
         if (err) {
             return res.status(500).json({
                 success: false,
@@ -366,7 +366,7 @@ exports.updateBookQuantity = (req, res) => {
             })
         }
 
-        connection.query('UPDATE Book SET bookQuantity = ? WHERE idLibrary = ?', [bookQuantity, idLibrary], (err, result) => {
+        pool.query('UPDATE Book SET bookQuantity = ? WHERE idLibrary = ?', [bookQuantity, idLibrary], (err, result) => {
             if (err) {
                 return res.status(500).json({
                     success: false,
@@ -394,7 +394,7 @@ exports.updateStatusAvailable = (req, res) => {
         })
     }
 
-    connection.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
+    pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
         if (err) {
             return res.status(500).json({
                 success: false,
@@ -417,7 +417,7 @@ exports.updateStatusAvailable = (req, res) => {
                 data: err
             })
         } else {
-            connection.query('UPDATE Book SET status_Available = ? WHERE idLibrary = ?', [status_Available, idLibrary], (err, result) => {
+            pool.query('UPDATE Book SET status_Available = ? WHERE idLibrary = ?', [status_Available, idLibrary], (err, result) => {
                 if (err) {
                     return res.status(500).json({
                         success: false,
@@ -439,7 +439,7 @@ exports.updateStatusAvailable = (req, res) => {
 exports.deleteBook = (req, res) => {
     const idLibrary = req.params.LibraryId
 
-    connection.query('SELECT * FROM Book where idLibrary = ?', [idLibrary], (err, result) => {
+    pool.query('SELECT * FROM Book where idLibrary = ?', [idLibrary], (err, result) => {
         if(err){
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -455,7 +455,7 @@ exports.deleteBook = (req, res) => {
                 data: err
             })
         } else {
-            connection.query('DELETE FROM Book where idLibrary = ?', [idLibrary], (err, result) => {
+            pool.query('DELETE FROM Book where idLibrary = ?', [idLibrary], (err, result) => {
                 if(err){
                     return res.status(500).json({
                         message: "Erro ao se conectar com o servidor.",

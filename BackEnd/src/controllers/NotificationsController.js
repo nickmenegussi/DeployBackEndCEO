@@ -1,10 +1,10 @@
-const connection = require("../config/db")
+const pool = require("../config/promise")
 
 exports.viewNotificationsByUser = (req, res) => {
     const idNotifications = req.params.idNotification
     const User_idUser = req.data.id
 
-    connection.query(`"SELECT * FROM notifications 
+    pool.query(`"SELECT * FROM notifications 
         WHERE User_idUser = ? AND idNotifications = ?
         ORDER BY created_at DESC"
         `, [User_idUser, idNotifications], (err, result) => {
@@ -35,7 +35,7 @@ exports.viewNotificationsByUser = (req, res) => {
 }
 
 exports.viewAllNotifications = (req, res) => {
-    connection.query(`SELECT * FROM notifications 
+    pool.query(`SELECT * FROM notifications 
         ORDER BY created_at DESC
         `, (err, result) => {
         if (err) {
@@ -65,7 +65,7 @@ exports.createNotification = (req, res) => {
         })
     }
 
-    connection.query(`INSERT INTO notifications (message, isRead ,User_idUser)
+    pool.query(`INSERT INTO notifications (message, isRead ,User_idUser)
         VALUES (?, ? ,?)
         `, [message, false, User_idUser], (err, result) => {
         if (err) {
@@ -88,7 +88,7 @@ exports.getNotificationsStatusofRead = (req, res) => {
     const idNotifications = req.params.idNotification
     const User_idUser = req.data.id
 
-    connection.query(`SELECT * FROM notifications 
+    pool.query(`SELECT * FROM notifications 
         WHERE User_idUser = ? AND idNotifications = ?
         
         `, [User_idUser, idNotifications], (err, result) => {
@@ -128,7 +128,7 @@ exports.updateNotificationStatusofRead = (req, res) => {
     const idNotifications = req.params.idNotification
     const User_idUser = req.data.id
 
-    connection.query('SELECT * FROM notifications WHERE User_idUser = ? AND idNotifications = ?', [User_idUser, idNotifications], (err, result) => { 
+    pool.query('SELECT * FROM notifications WHERE User_idUser = ? AND idNotifications = ?', [User_idUser, idNotifications], (err, result) => { 
         if (err) {
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -153,7 +153,7 @@ exports.updateNotificationStatusofRead = (req, res) => {
             })
         }
 
-        connection.query(`UPDATE notifications 
+        pool.query(`UPDATE notifications 
             SET isRead = true
             WHERE User_idUser = ? AND idNotification = ?
             
@@ -189,7 +189,7 @@ exports.updateNotificationMessage = (req, res) => {
             data: null,
         })
     }
-    connection.query(`SELECT * FROM notifications 
+    pool.query(`SELECT * FROM notifications 
         WHERE User_idUser = ? AND idNotifications = ?
         
         `, [User_idUser, idNotifications], (err, result) => {
@@ -217,7 +217,7 @@ exports.updateNotificationMessage = (req, res) => {
             })
         }
 
-        connection.query(`UPDATE notifications 
+        pool.query(`UPDATE notifications 
             SET message = ?
             WHERE User_idUser = ? AND idNotifications = ?
             
@@ -244,7 +244,7 @@ exports.deleteNotification = (req, res) => {
     const idNotifications = req.params.idNotifications
     const User_idUser = req.data.id
 
-    connection.query(`SELECT * FROM notifications 
+    pool.query(`SELECT * FROM notifications 
         WHERE User_idUser = ? AND idNotifications = ?
         
         `, [User_idUser, idNotifications], (err, result) => {
@@ -272,7 +272,7 @@ exports.deleteNotification = (req, res) => {
             })
         }
 
-        connection.query(`DELETE FROM notifications 
+        pool.query(`DELETE FROM notifications 
             WHERE User_idUser = ? AND idNotifications = ?
             
             `, [User_idUser, idNotifications], (err, result) => {

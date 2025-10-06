@@ -1,9 +1,9 @@
-const connection = require("../config/db");
+const pool = require("../config/promise");
 
 exports.viewEventsByUser = (req, res) => {
   const User_idUser = req.data.id;
 
-  connection.query(
+  pool.query(
     `SELECT * FROM CalendarEvents 
         WHERE User_idUser = ?
         ORDER BY createdDate DESC
@@ -36,7 +36,7 @@ exports.viewEventsByUser = (req, res) => {
 };
 
 exports.viewAllEvents = (req, res) => {
-  connection.query(
+  pool.query(
     `SELECT User_idUser, attachment, dateEvent, description, end, idCalendarEvents, link, start, title, status_permission FROM CalendarEvents 
     INNER JOIN User where status_permission = 'admin' OR status_permission = 'SuperAdmin'
         ORDER BY start DESC
@@ -86,7 +86,7 @@ exports.createEvent = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     `SELECT * FROM CalendarEvents WHERE title = ? AND description = ? AND start = ? AND end = ? AND User_idUser = ? AND link = ? AND dateEvent = ?`,
     [title, description, start, end, User_idUser, link, dateEvent],
     (err, result) => {
@@ -106,7 +106,7 @@ exports.createEvent = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         `INSERT INTO CalendarEvents (title, link, description, start, end, attachment, dateEvent, User_idUser) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
@@ -151,7 +151,7 @@ exports.updateEventLink = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     "SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
     [idCalendarEvents, User_idUser],
     (err, result) => {
@@ -171,7 +171,7 @@ exports.updateEventLink = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         "Update CalendarEvents SET link = ? WHERE idCalendarEvents = ? and User_idUser = ?",
         [link, idCalendarEvents, User_idUser],
         (err, result) => {
@@ -206,7 +206,7 @@ exports.updateEventTitle = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     `SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?`,
     [idCalendarEvents, User_idUser],
     (err, result) => {
@@ -226,7 +226,7 @@ exports.updateEventTitle = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         `UPDATE CalendarEvents SET title = ? WHERE idCalendarEvents = ? AND User_idUser = ?`,
         [title, idCalendarEvents, User_idUser],
         (err, result) => {
@@ -261,7 +261,7 @@ exports.updateEventdescription = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     `SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?`,
     [idCalendarEvents, User_idUser],
     (err, result) => {
@@ -281,7 +281,7 @@ exports.updateEventdescription = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         `UPDATE CalendarEvents SET description = ? WHERE idCalendarEvents = ? AND User_idUser = ?`,
         [description, idCalendarEvents, User_idUser],
         (err, result) => {
@@ -316,7 +316,7 @@ exports.updateEventStart = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     `SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?`,
     [idCalendarEvents, User_idUser],
     (err, result) => {
@@ -336,7 +336,7 @@ exports.updateEventStart = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         `UPDATE CalendarEvents SET start = ? WHERE idCalendarEvents = ? AND User_idUser = ?`,
         [start, idCalendarEvents, User_idUser],
         (err, result) => {
@@ -371,7 +371,7 @@ exports.updateEventEnd = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     `SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?`,
     [idCalendarEvents, User_idUser],
     (err, result) => {
@@ -391,7 +391,7 @@ exports.updateEventEnd = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         `UPDATE CalendarEvents SET end = ? WHERE idCalendarEvents = ? AND User_idUser = ?`,
         [end, idCalendarEvents, User_idUser],
         (err, result) => {
@@ -426,7 +426,7 @@ exports.updateAttachment = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     `SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?`,
     [idCalendarEvents, User_idUser],
     (err, result) => {
@@ -446,7 +446,7 @@ exports.updateAttachment = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         `UPDATE CalendarEvents SET attachment = ? WHERE idCalendarEvents = ? AND User_idUser = ?`,
         [attachment, idCalendarEvents, User_idUser],
         (err, result) => {
@@ -473,7 +473,7 @@ exports.deleteEvent = (req, res) => {
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
 
-  connection.query(
+  pool.query(
     `SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?`,
     [idCalendarEvents, User_idUser],
     (err, result) => {
@@ -493,7 +493,7 @@ exports.deleteEvent = (req, res) => {
         });
       }
 
-      connection.query(
+      pool.query(
         `DELETE FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?`,
         [idCalendarEvents, User_idUser],
         (err, result) => {

@@ -1,12 +1,11 @@
 const pool = require('../config/promise')
-const connection = require('../config/db')
 
 // menos verboso, mais elegante e seguro... evita callbacks
 // callbacks = É uma função passada como argumento para ser executada depois que uma operação terminar.
 exports.getCommentsByPostId = async (req, res) => {
   const { postId } = req.params;
   try {
-    const [rows] = await pool.query(`
+    const [rows] = await pool.promise().query(`
       SELECT
         c.idComments,
         c.message AS content,
@@ -35,7 +34,7 @@ exports.createComment = (req, res) => {
         return res.status(400).json({ error: "Campos obrigatórios não preenchidos" });
     }
 
-    connection.query(`SELECT * FROM comments WHERE Post_idPost = ? AND User_idUser = ? AND message = ?`, [postId, User_idUser, message], (err, result) => {
+    pool.query(`SELECT * FROM comments WHERE Post_idPost = ? AND User_idUser = ? AND message = ?`, [postId, User_idUser, message], (err, result) => {
         if (err) {
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -52,7 +51,7 @@ exports.createComment = (req, res) => {
             })
         } 
         
-        connection.query(`INSERT INTO comments (Post_idPost, User_idUser, message) 
+        pool.query(`INSERT INTO comments (Post_idPost, User_idUser, message) 
         VALUES (?, ?, ?)
         `, [postId, User_idUser, message], (err, result) => {
         if (err) {
@@ -77,7 +76,7 @@ exports.updateComment = (req, res) => {
     const { message } = req.body
     const User_idUser = req.data.id
 
-    connection.query(`SELECT * FROM comments WHERE idComments = ? AND User_idUser = ?`, (err, result) => {
+    pool.query(`SELECT * FROM comments WHERE idComments = ? AND User_idUser = ?`, (err, result) => {
         if (err) {
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -101,7 +100,7 @@ exports.updateComment = (req, res) => {
             })
         }
 
-        connection.query(`UPDATE comments SET message = ? WHERE idComments = ? AND User_idUser = ?`, [message, idComments, User_idUser], (err, result) => {
+        pool.query(`UPDATE comments SET message = ? WHERE idComments = ? AND User_idUser = ?`, [message, idComments, User_idUser], (err, result) => {
             if (err) {
                 return res.status(500).json({
                     message: "Erro ao se conectar com o servidor.",
@@ -132,7 +131,7 @@ exports.deleteComment = (req, res) => {
     const idComments = req.params.idComments
     const User_idUser = req.data.id
 
-    connection.query(`SELECT * FROM comments WHERE idComments = ? AND User_idUser = ?`, (err, result) => {
+    pool.query(`SELECT * FROM comments WHERE idComments = ? AND User_idUser = ?`, (err, result) => {
         if (err) {
             return res.status(500).json({
                 message: "Erro ao se conectar com o servidor.",
@@ -156,7 +155,7 @@ exports.deleteComment = (req, res) => {
             })
         }
 
-        connection.query(`DELETE FROM comments WHERE idComments = ? AND User_idUser = ?`, [idComments, User_idUser], (err, result) => {
+        pool.query(`DELETE FROM comments WHERE idComments = ? AND User_idUser = ?`, [idComments, User_idUser], (err, result) => {
             if (err) {
                 return res.status(500).json({
                     message: "Erro ao se conectar com o servidor.",

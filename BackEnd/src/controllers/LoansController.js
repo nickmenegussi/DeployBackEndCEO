@@ -1,8 +1,8 @@
-const connection = require("../config/db");
+const pool = require("../config/promise");
 const nodemailer = require('nodemailer')
 
 exports.viewAllLoans = (req, res) => {
-  connection.query("SELECT * FROM Loans", (err, result) => {
+  pool.query("SELECT * FROM Loans", (err, result) => {
     if (err) {
       return res.status(500).json({
         message: "Erro ao se conectar com o servidor.",
@@ -24,7 +24,7 @@ exports.viewLoansByUser = (req, res) => {
   const idUser = req.data.id;
 
   // Fazer um join, pois, eu só vou querer algumas informações ou todas do empréstimo que eu armazenei no carrinho para ,por fim, armazenado como um Empréstimo.
-  connection.query(
+  pool.query(
     `SELECT idLoans, quantity, User_idUser, Book_idLibrary,  nameBook, authorBook, image, tagsBook, bookCategory, date_aquisition, returnDate FROM 
     Loans l, Book b, User u
     where b.idLibrary = l.Book_idLibrary
@@ -161,7 +161,7 @@ exports.createLoan = (req, res) => {
   }
 
   // Primeiro verifica se o carrinho existe e se a ação é de empréstimo, se não, quer dizer que depois ele pode cadastrar se a ação for de empréstimo
-  connection.query(
+  pool.query(
     `SELECT * FROM Cart where idCart = ?
 
         `,
@@ -190,7 +190,7 @@ exports.createLoan = (req, res) => {
 
       // verificar duplicidade de empréstimos
       if (result[0].action === "emprestar") {
-        connection.query(
+        pool.query(
           "SELECT * FROM Loans where Book_idLibrary = ? and User_idUser = ?",
           [Book_idLibrary, User_idUser],
           (err, result) => {
@@ -209,7 +209,7 @@ exports.createLoan = (req, res) => {
               });
             }
 
-            connection.query(
+            pool.query(
               "SELECT bookQuantity FROM Book WHERE idLibrary = ?",
               [Book_idLibrary],
               (err, result) => {
@@ -236,7 +236,7 @@ exports.createLoan = (req, res) => {
                   });
                 }
 
-                connection.query(
+                pool.query(
                   `INSERT INTO Loans(User_idUser, Book_idLibrary, quantity, returnDate) 
          VALUES(?, ?, ?, DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 7 DAY))`,
                   [User_idUser, Book_idLibrary, quantity],
@@ -249,7 +249,7 @@ exports.createLoan = (req, res) => {
                       });
                     }
 
-                    connection.query(
+                    pool.query(
                       "UPDATE Book SET bookQuantity = bookQuantity - ? WHERE idLibrary = ?",
                       [quantity, Book_idLibrary],
                       (errUpdate, result) => {
@@ -263,7 +263,7 @@ exports.createLoan = (req, res) => {
                         }
 
                         // Verifica a nova quantidade para definir o status
-                        connection.query(
+                        pool.query(
                           "SELECT bookQuantity FROM Book WHERE idLibrary = ?",
                           [Book_idLibrary],
                           (errQty, resultQty) => {
@@ -285,7 +285,7 @@ exports.createLoan = (req, res) => {
                             }
 
                             // Atualiza o status_Available
-                            connection.query(
+                            pool.query(
                               "UPDATE Book SET status_Available = ? WHERE idLibrary = ?",
                               [newStatus, Book_idLibrary],
                               (errStatusUpdate) => {
@@ -298,7 +298,7 @@ exports.createLoan = (req, res) => {
                                   });
                                 }
 
-                                connection.query(
+                                pool.query(
                                   `
                                     SELECT 
                                       l.idLoans,
@@ -350,7 +350,7 @@ exports.createLoan = (req, res) => {
                                       );
                                     }
 
-                                    connection.query(
+                                    pool.query(
                                       `DELETE FROM Cart WHERE idCart = ?`,
                                       [Cart_idCart],
                                       (errDelete) => {
@@ -401,7 +401,7 @@ exports.updateReturnDate = (req, res) => {
     });
   }
 
-  connection.query(
+  pool.query(
     `SELECT * FROM Loans where idLoans = ?`,
     [idLoans],
     (err, result) => {
@@ -431,7 +431,7 @@ exports.updateReturnDate = (req, res) => {
         }
       }
 
-      connection.query(
+      pool.query(
         ` UPDATE Loans l
             JOIN Cart c on l.Cart_idCart = c.idCart
             JOIN User u on c.User_idUser = u.idUser
@@ -464,7 +464,7 @@ exports.deleteLoan = (req, res) => {
   const idLoans = req.params.LoansId;
   const idUser = req.data.id;
 
-  connection.query(
+  pool.query(
     `
         SELECT * FROM Loans where idLoans = ?`,
     [idLoans],
@@ -495,7 +495,7 @@ exports.deleteLoan = (req, res) => {
           });
         }
       }
-      connection.query(
+      pool.query(
         `DELETE l FROM Loans l
                     JOIN Cart c on l.Cart_idCart = c.idCart
                     JOIN User u on c.User_idUser = u.idUser

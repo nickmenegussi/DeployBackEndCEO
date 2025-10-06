@@ -1,8 +1,8 @@
-const connection = require("../config/db")
+const pool = require("../config/promise")
 
 exports.viewCartAll = (req, res) => {
   const idUser = req.data.id
-  connection.query(
+  pool.query(
     `SELECT c.*, b. *
 FROM Cart c
 JOIN Book b ON c.Book_idLibrary = b.idLibrary
@@ -30,7 +30,7 @@ exports.viewCartByUser = (req, res) => {
   const idUser = req.params.idUser
   const idLibrary = req.params.idLibrary
 
-  connection.query(
+  pool.query(
     `SELECT * FROM Cart c, User u, Book b
             WHERE c.User_idUser = u.idUser 
             AND c.Book_idLibrary = b.idLibrary
@@ -72,7 +72,7 @@ exports.updateAction = (req, res) => {
     })
   }
 
-  connection.query(
+  pool.query(
     "SELECT * FROM Cart WHERE idCart = ?",
     [idCart],
     (err, result) => {
@@ -91,7 +91,7 @@ exports.updateAction = (req, res) => {
         })
       }
 
-      connection.query(
+      pool.query(
         "UPDATE Cart SET action = ? WHERE idCart = ?",
         [idCart],
         (err, result) => {
@@ -125,7 +125,7 @@ exports.updateQuantity = (req, res) => {
       message: "Preencha todos os campos de cadastro",
     })
   }
-  connection.query(
+  pool.query(
     ` SELECT * FROM User u
     INNER JOIN Cart c on u.idUser =  c.User_idUser
     INNER JOIN Book b on b.idLibrary = c.Book_idLibrary 
@@ -149,7 +149,7 @@ exports.updateQuantity = (req, res) => {
         })
       }
 
-      connection.query(
+      pool.query(
         "UPDATE CART SET quantity = ? where User_idUser = ? and Book_idLibrary = ?",
         [quantity, User_idUser, Book_idLibrary],
         (err, result) => {
@@ -191,7 +191,7 @@ exports.createCart = (req, res) => {
   }
 
   // Verifica se o usuário existe
-  connection.query(
+  pool.query(
     "SELECT * FROM User WHERE idUser = ?",
     [User_idUser],
     (err, userResult) => {
@@ -212,7 +212,7 @@ exports.createCart = (req, res) => {
       }
 
       // Verifica se o livro existe
-      connection.query(
+      pool.query(
         "SELECT * FROM Book WHERE idLibrary = ?",
         [Book_idLibrary],
         (err, bookResult) => {
@@ -224,7 +224,7 @@ exports.createCart = (req, res) => {
           }
 
           // Verifica se já existe no carrinho
-          connection.query(
+          pool.query(
             `SELECT * FROM Cart c
             INNER JOIN Loans l on c.User_idUser = l.User_idUser AND c.Book_idLibrary = l.Book_idLibrary
             where c.User_idUser = ?
@@ -245,7 +245,7 @@ exports.createCart = (req, res) => {
                 })
               } 
               // Insere no carrinho
-                connection.query(
+                pool.query(
                   "INSERT INTO Cart(User_idUser, Book_idLibrary, action, quantity) VALUES(?, ?, ?, ?)",
                   [User_idUser, Book_idLibrary, action, quantity],
                   (err, insertResult) => {
@@ -275,7 +275,7 @@ exports.createCart = (req, res) => {
 exports.deleteCart = (req, res) => {
   const idCart = req.params.idCart
 
-  connection.query(
+  pool.query(
     "SELECT idCart FROM Cart where idCart = ?",
     [idCart],
     (err, result) => {
@@ -294,7 +294,7 @@ exports.deleteCart = (req, res) => {
           data: err,
         })
       } else {
-        connection.query(
+        pool.query(
           "DELETE FROM Cart where idCart = ?",
           [idCart],
           (err, result) => {

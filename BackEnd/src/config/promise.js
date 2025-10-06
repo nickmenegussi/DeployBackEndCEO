@@ -1,4 +1,4 @@
-const mysql = require("mysql2/promise.js");
+const mysql = require("mysql2");
 
 const pool = mysql.createPool({
   host: process.env.MYSQL_ADDON_HOST,
@@ -7,7 +7,7 @@ const pool = mysql.createPool({
   database: process.env.MYSQL_ADDON_DB,
   port: parseInt(process.env.MYSQL_ADDON_PORT),
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 3,
   queueLimit: 0,
   acquireTimeout: 30000, // 30 segundos para adquirir conexão
   timeout: 30000, // 30 segundos para timeout de query
