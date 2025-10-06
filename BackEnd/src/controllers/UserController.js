@@ -1,6 +1,7 @@
 const connection = require("../config/db");
 const pool = require("../config/promise");
 const bcrypt = require("bcrypt");
+const cloudinary = require('../config/cloudinary')
 
 exports.viewOnlyUser = (req, res) => {
   const dataUser = req.data.id;
@@ -351,70 +352,81 @@ exports.updateUserPassword = (req, res) => {
   );
 };
 
-exports.updateUserImageProfile = (req, res) => {
-  const image_profile = req.file ? req.file.filename : null;
+exports.updateUserImageProfile = async (req, res) => {
+  const image_profile = req.file
   const idUser = req.data.id;
 
-  if (!idUser) {
+  if (!idUser || !image_profile) {
     return res.status(400).json({
       success: false,
       message: "Preencha todos os campos de cadastro",
     });
   }
 
-  connection.query(
-    "SELECT * FROM User WHERE idUser = ?",
-    [idUser],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Erro ao se conectar com o servidor.",
-          success: false,
-          data: err,
-        });
-      }
+  try {
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream({
+        folder: "profile_pictures",
+        resource_type: "image"
+      }, (error, result) => {
+        if(error) reject(error)
+        else resolve(result)
+      })
+      stream.end(image_profile.buffer)
+    })
 
-      if (result.length === 0) {
-        return res.status(400).json({
-          message:
-            "Usuario não encontrado. Verifique os dados e tente novamente.",
-          success: false,
-          data: err,
-        });
-      } else {
-        const updateInformation =
-          "UPDATE User set image_profile = ? where idUser = ?";
+    const imageUrl = result.secure_url
+
+    connection.query(
+      "SELECT * FROM User WHERE idUser = ?",
+      [idUser],
+      (err, userResult) => {
+        if (err) {
+          return res.status(500).json({
+            success: false,
+            message: "Erro ao consultar o usuário.",
+            data: err,
+          });
+        }
+
+        if (userResult.length === 0) {
+          return res.status(404).json({
+            success: false,
+            message: "Usuário não encontrado.",
+          });
+        }
+
+        // Atualiza imagem de perfil no banco
+        const updateQuery = "UPDATE User SET image_profile = ? WHERE idUser = ?";
         connection.query(
-          updateInformation,
-          [image_profile, idUser],
-          (errUpdateImgProfile, resultUpdateImgProfile) => {
-            if (errUpdateImgProfile) {
+          updateQuery,
+          [imageUrl, idUser],
+          (errUpdate, updateResult) => {
+            if (errUpdate) {
               return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
                 success: false,
-                data: err,
+                message: "Erro ao atualizar imagem no banco.",
+                data: errUpdate,
               });
             }
 
-            if (resultUpdateImgProfile.affectedRows === 0) {
-              return res.status(500).json({
-                message:
-                  "Erro ao alterar foto de perfil. Por favor, tente novamente.",
-                success: false,
-                data: errUpdateImgProfile,
-              });
-            } else {
-              return res.status(200).json({
-                message: "Sucesso ao alterar foto de perfil.",
-                success: true,
-                data: { image_profile: image_profile },
-              });
-            }
+            return res.status(200).json({
+              success: true,
+              message: "Imagem de perfil atualizada com sucesso.",
+              data: { image_profile: imageUrl },
+            });
           }
         );
-      }
-    }
-  );
+      })
+
+  } catch (error) {
+    console.error("Erro no upload para Cloudinary", error)
+    return res.status(500).json({
+      success: false,
+      message: "Erro ao enviar imagem para o Cloudinary.",
+      data: err,
+    })
+  }
 };
 
 exports.deleteAccountUser = (req, res) => {
