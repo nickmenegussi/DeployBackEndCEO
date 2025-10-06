@@ -2,6 +2,8 @@ const pool = require("../config/promise");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
+const resend = new Resend(process.env.API_KEY_RESEND);
 const OtpGenerator = require("otp-generator");
 
 exports.login = async (req, res) => {
@@ -15,7 +17,8 @@ exports.login = async (req, res) => {
   }
 
   try {
-    const query = "SELECT idUser, email, password, status_permission, image_profile FROM User WHERE email = ?";
+    const query =
+      "SELECT idUser, email, password, status_permission, image_profile FROM User WHERE email = ?";
     const [result] = await pool.promise().query(query, [email]);
 
     if (result.length === 0) {
@@ -48,13 +51,13 @@ exports.login = async (req, res) => {
       data: { user: user, token: token },
     });
   } catch (error) {
-    console.error('Erro ao criar um login do usuário: ', error)
+    console.error("Erro ao criar um login do usuário: ", error);
     return res.status(500).json({
       message: "Erro ao se conectar com o servidor.",
       success: false,
-      body: null
-    })
-  } 
+      body: null,
+    });
+  }
 };
 
 exports.GenerateOtp = (req, res) => {
@@ -97,7 +100,7 @@ exports.GenerateOtp = (req, res) => {
           pool.query(
             "INSERT INTO OTP(email, otp, expiresAt) VALUES(?, ?, ?)",
             [email, otp, expiresAt],
-            (err, result) => {
+            async (err, result) => {
               if (err) {
                 return result.status(500).json({
                   message: "Erro ao se conectar com o servidor.",
@@ -106,55 +109,53 @@ exports.GenerateOtp = (req, res) => {
                 });
               } else {
                 try {
-                  const transporter = nodemailer.createTransport({
-                    service: "gmail",
-                    auth: {
-                      user: process.env.EMAILAPP,
-                      pass: process.env.SENHAEMAILAPP,
-                    },
-                    tls: {
-                      rejectUnauthorized: false, // <<< ISSO IGNORA O ERRO DE CERTIFICADO
-                    },
-                  });
-                  transporter.sendMail({
-                    from: process.env.EMAILAPP,
+                  // versão que funciona apenas local:
+                  // const transporter = nodemailer.createTransport({
+                  //   service: "gmail",
+                  //   auth: {
+                  //     user: process.env.EMAILAPP,
+                  //     pass: process.env.SENHAEMAILAPP,
+                  //   },
+                  //   tls: {
+                  //     rejectUnauthorized: false, // <<< ISSO IGNORA O ERRO DE CERTIFICADO
+                  //   },
+                  // });
+                  // utilizando o resend para funcionar com a vercel!
+                  const { data, error } = await resend.emails.send({
+                    from: "Centro Espírita Online <onboarding@resend.dev>",
                     to: email,
                     subject: "Verificação de duas Etapas",
-                    text: `Olá,
-
-Recebemos uma solicitação para acessar sua conta.
-Seu código de verificação é:
-
-🔐 ${otp}
-
-Esse código é válido por 5 minutos.
-Por segurança, não compartilhe este código com ninguém.
-
-Se você não solicitou este acesso, ignore esta mensagem.
-
-Atenciosamente,
-Equipe [Centro Espírita Online]`,
+                    html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #003B73;">Centro Espírita Online</h2>
+            <p>Olá,</p>
+            <p>Recebemos uma solicitação para acessar sua conta.</p>
+            <p style="font-size: 24px; font-weight: bold; color: #003B73; text-align: center; margin: 20px 0;">
+              🔐 ${otp}
+            </p>
+            <p><strong>Este código é válido por 5 minutos.</strong></p>
+            <p>Por segurança, não compartilhe este código com ninguém.</p>
+            <p>Se você não solicitou este acesso, ignore esta mensagem.</p>
+            <br>
+            <p>Atenciosamente,<br>Equipe Centro Espírita Online</p>
+          </div>
+        `,
+                    text: `Olá,\n\nRecebemos uma solicitação para acessar sua conta.\nSeu código de verificação é:\n\n🔐 ${otp}\n\nEste código é válido por 5 minutos.\nPor segurança, não compartilhe este código com ninguém.\n\nSe você não solicitou este acesso, ignore esta mensagem.\n\nAtenciosamente,\nEquipe Centro Espírita Online`,
                   });
 
-                  pool.query(
-                    "SELECT * FROM  OTP where email = ?",
-                    [email],
-                    (errSelect, resultSelect) => {
-                      if (errSelect) {
-                        return res.status(500).json({
-                          message:
-                            "Não foi possível encontrar essas informações.",
-                          success: false,
-                          body: errSelect,
-                        });
-                      }
-                      return res.status(201).json({
-                        message: "Sucesso ao criar OTP.",
-                        success: true,
-                        data: [email],
-                      });
-                    }
-                  );
+                  if (error) {
+                    console.error("Erro ao enviar otp pelo email utilizando resend", error);
+                    return res.status(500).json({
+                      message: "Erro ao enviar otp pelo email utilizando resend",
+                      success: false
+                    })
+                  }
+
+                  return res.status(200).json({
+                    message: "Sucesso ao criar OTP. Email enviado!",
+                    success: true,
+                    data: [email],
+                  });
                 } catch (erro) {
                   res.status(400).send("Erro ao gerar OTP");
                   throw erro;
