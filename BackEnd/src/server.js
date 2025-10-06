@@ -4,7 +4,7 @@ const cors = require("cors");
 const http = require("http");
 const { initializerSocket, getIO } = require("./socket/index");
 const dotenv = require("dotenv");
-const port = parseInt(process.env.PORT) || 3001;
+const port = parseInt(process.env.MYSQL_ADDON_PORT) || 3001;
 
 const userRouter = require("./routers/UserRouter");
 const adminRouter = require("./routers/AdminRouter");
