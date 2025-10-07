@@ -61,6 +61,7 @@ exports.login = async (req, res) => {
 };
 
 exports.GenerateOtp = (req, res) => {
+  const userData = req.data.nameEUser
   const { email } = req.body;
 
   if (!email) {
@@ -70,7 +71,7 @@ exports.GenerateOtp = (req, res) => {
     });
   } else {
     pool.query(
-      "SELECT email FROM User WHERE email = ?",
+      "SELECT email, nameUSer FROM User WHERE email = ?",
       [email],
       async (err, result) => {
         if (err) {
@@ -122,13 +123,13 @@ exports.GenerateOtp = (req, res) => {
                   // });
                   // utilizando o resend para funcionar com a vercel!
                   const { data, error } = await resend.emails.send({
-                    from: "Centro Espírita Online <nicolasmramos09@gmail.com>",
+                    from: "noreply@menegussiramos.com",
                     to: email,
                     subject: "Verificação de duas Etapas",
                     html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #003B73;">Centro Espírita Online</h2>
-            <p>Olá,</p>
+            <p>Olá, ${userData ? userData : result[0].nameUser}</p>
             <p>Recebemos uma solicitação para acessar sua conta.</p>
             <p style="font-size: 24px; font-weight: bold; color: #003B73; text-align: center; margin: 20px 0;">
               🔐 ${otp}
