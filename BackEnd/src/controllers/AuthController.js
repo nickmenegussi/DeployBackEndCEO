@@ -61,7 +61,6 @@ exports.login = async (req, res) => {
 };
 
 exports.GenerateOtp = (req, res) => {
-  const userData = req.data.nameEUser
   const { email } = req.body;
 
   if (!email) {
@@ -71,9 +70,9 @@ exports.GenerateOtp = (req, res) => {
     });
   } else {
     pool.query(
-      "SELECT email, nameUSer FROM User WHERE email = ?",
+      "SELECT email, nameUser FROM User WHERE email = ?",
       [email],
-      async (err, result) => {
+      async (err, resulSetectUser) => {
         if (err) {
           return res.status(500).json({
             message: "Erro ao se conectar com o servidor.",
@@ -82,7 +81,7 @@ exports.GenerateOtp = (req, res) => {
           });
         }
 
-        if (result.length === 0) {
+        if (resulSetectUser.length === 0) {
           return res.status(400).json({
             message:
               "Esse email não foi cadastrado no nosso sistema, por favor, se cadastre caso não possuir cadastro. Entretanto, caso possuas, digite novamente. ",
@@ -129,7 +128,7 @@ exports.GenerateOtp = (req, res) => {
                     html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #003B73;">Centro Espírita Online</h2>
-            <p>Olá, ${userData ? userData : result[0].nameUser}</p>
+            <p>Olá, ${resulSetectUser[0].nameUser}</p>
             <p>Recebemos uma solicitação para acessar sua conta.</p>
             <p style="font-size: 24px; font-weight: bold; color: #003B73; text-align: center; margin: 20px 0;">
               🔐 ${otp}

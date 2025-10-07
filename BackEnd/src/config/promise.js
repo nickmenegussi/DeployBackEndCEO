@@ -16,4 +16,12 @@ const pool = mysql.createPool({
   maxIdle: 10, // máximo de conexões idle
 });
 
+pool.getConnection((err) => {
+    if(err){
+        throw err
+    } else {
+        console.log('Banco conectado')
+    }
+})
+
 module.exports = pool;
