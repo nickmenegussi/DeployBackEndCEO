@@ -311,7 +311,7 @@ exports.deleteCart = (req, res) => {
                 message:
                   "Erro ao deletar carrinho. Verifique os dados e tente novamente.",
                 success: false,
-                data: err,
+                data: err
               })
             } else {
               return res.status(201).json({

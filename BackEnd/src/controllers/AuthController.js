@@ -169,7 +169,7 @@ exports.GenerateOtp = (req, res) => {
   }
 };
 
-exports.VerificationOtp = (req, res) => {
+exports.VerificationOtp = async (req, res) => {
   const { email, otp } = req.body;
   if (!email || !otp) {
     return res.status(400).json({
@@ -177,6 +177,8 @@ exports.VerificationOtp = (req, res) => {
       success: false,
     });
   }
+
+  await pool.execute('DELETE FROM OTP WHERE expiresAt < NOW()')
 
   pool.query(
     "SELECT * FROM Otp where email = ? and otp = ?",

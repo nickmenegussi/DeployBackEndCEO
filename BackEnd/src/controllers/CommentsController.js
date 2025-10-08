@@ -5,7 +5,7 @@ const pool = require('../config/promise')
 exports.getCommentsByPostId = async (req, res) => {
   const { postId } = req.params;
   try {
-    const [rows] = await pool.promise().query(`
+    const [rows] = await pool.query(`
       SELECT
         c.idComments,
         c.message AS content,
