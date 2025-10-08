@@ -19,7 +19,7 @@ exports.login = async (req, res) => {
   try {
     const query =
       "SELECT idUser, email, password, status_permission, image_profile FROM User WHERE email = ?";
-    const [result] = await pool.promise().query(query, [email]);
+    const [result] = await pool.query(query, [email]);
 
     if (result.length === 0) {
       return res.status(400).json({
