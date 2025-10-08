@@ -3,7 +3,7 @@ const pool = require("../config/promise");
 // Obter todos os posts
 exports.getAllPosts = async (req, res) => {
   try {
-    const [rows] = await pool.promise().query(`
+    const [rows] = await pool.query(`
       SELECT
         p.idPost,
         p.content,
@@ -66,7 +66,7 @@ exports.createPost = async (req, res) => {
 exports.getPostById = async (req, res) => {
   const { postId } = req.params;
   try {
-    const [rows] = await pool.promise().query(
+    const [rows] = await pool.query(
       `
       SELECT
           p.idPost,
@@ -103,7 +103,7 @@ exports.toggleLike = async (req, res) => {
   const userId = req.data.id; // ID do usuário autenticado
 
   try {
-    const [existingLike] = await pool.promise().query(
+    const [existingLike] = await pool.query(
       "SELECT idLikes FROM Likes WHERE Post_idPost = ? AND User_idUser = ?",
       [postId, userId]
     );

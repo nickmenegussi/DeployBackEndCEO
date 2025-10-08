@@ -514,7 +514,7 @@ exports.updateUserForgotPassword = async (req, res) => {
       });
     }
 
-    const [user] = await pool.promise().query("SELECT * FROM user Where email = ?", [
+    const [user] = await pool.query("SELECT * FROM user Where email = ?", [
       email,
     ]);
 
@@ -522,7 +522,7 @@ exports.updateUserForgotPassword = async (req, res) => {
       return res.status(404).json({ message: "Nenhum usuário encontrado." });
     }
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    const [updateForgotPassword] = await pool.promise().query(
+    const [updateForgotPassword] = await pool.query(
       "UPDATE USER SET password = ? WHERE idUser = ?",
       [hashedPassword, user[0].idUser]
     );

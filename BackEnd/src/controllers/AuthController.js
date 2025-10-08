@@ -19,7 +19,7 @@ exports.login = async (req, res) => {
   try {
     const query =
       "SELECT idUser, email, password, status_permission, image_profile FROM User WHERE email = ?";
-    const [result] = await pool.promise().query(query, [email]);
+    const [result] = await pool.query(query, [email]);
 
     if (result.length === 0) {
       return res.status(400).json({
@@ -69,6 +69,8 @@ exports.GenerateOtp = (req, res) => {
       message: "Preencha todos os campos de cadastro",
     });
   } else {
+    pool.execute("DELETE FROM OTP WHERE expiresAt < NOW()")
+
     pool.query(
       "SELECT email, nameUser FROM User WHERE email = ?",
       [email],
@@ -169,7 +171,7 @@ exports.GenerateOtp = (req, res) => {
   }
 };
 
-exports.VerificationOtp = (req, res) => {
+exports.VerificationOtp = async (req, res) => {
   const { email, otp } = req.body;
   if (!email || !otp) {
     return res.status(400).json({
