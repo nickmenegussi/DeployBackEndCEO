@@ -7,7 +7,7 @@ const pool = mysql.createPool({
   database: process.env.MYSQL_ADDON_DB,
   port: parseInt(process.env.MYSQL_ADDON_PORT),
   waitForConnections: true,
-  connectionLimit: 3,
+  connectionLimit: 10,
   queueLimit: 0,
   acquireTimeout: 30000, // 30 segundos para adquirir conexão
   timeout: 30000, // 30 segundos para timeout de query
@@ -24,4 +24,4 @@ pool.getConnection((err) => {
     }
 })
 
-module.exports = pool;
+module.exports = pool

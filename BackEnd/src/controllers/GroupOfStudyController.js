@@ -4,7 +4,7 @@ const pool = require("../config/promise");
 // GET /category  -> lista categorias (nome e id)
 exports.getGroups = async (req, res) => {
   try {
-    const [rows] = await pool.promise().query(
+    const [rows] = await pool.query(
       "SELECT * FROM GROUPOFSTUDY ORDER BY CreatedAt DESC"
     );
 
@@ -36,7 +36,7 @@ exports.getGroupsByType = async (req, res) => {
   }
 
   try {
-    const [rows] = await pool.promise().query(
+    const [rows] = await pool.query(
       `
       SELECT 
         g.*,
@@ -94,7 +94,7 @@ exports.createGroup = async (req, res) => {
   }
   
   try {
-    const [exists] = await pool.promise().query(
+    const [exists] = await pool.query(
       `SELECT IdGroupOfStudy 
      FROM GroupOfStudy 
      WHERE NameStudy = ? AND TypeGroup = ? 
@@ -109,7 +109,7 @@ exports.createGroup = async (req, res) => {
       });
     }
 
-    const [result] = await pool.promise().query(
+    const [result] = await pool.query(
       `
     INSERT INTO GroupOfStudy
     (IdFacilitador, NameStudy, Description, DayOfWeek, StartTime, EndTime, TypeGroup, Requirements)
