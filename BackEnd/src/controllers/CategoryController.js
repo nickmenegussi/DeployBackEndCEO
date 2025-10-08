@@ -3,7 +3,7 @@ const pool = require('../config/promise')
 // para executar uma estrutura mais limpa no backend teremos que usar uma promise para o async await e try catch funcionarem
 exports.getCategories = async (req, res) => {
     try {
-        const [rows] = await pool.promise().query("SELECT nameCategory, idCategory FROM Category")
+        const [rows] = await pool.query("SELECT nameCategory, idCategory FROM Category")
 
         if(rows.length === 0){
 
@@ -18,7 +18,7 @@ exports.getCategories = async (req, res) => {
 exports.getTopicbyCategory = async (req, res) => {
     const {nameCategory} = req.params
     try {
-        const [rows] = await pool.promise().query(`
+        const [rows] = await pool.query(`
             
         SELECT *
         FROM Topic t
@@ -44,7 +44,7 @@ exports.createCategory = async (req, res) => {
     if(!user_id || !nameCategory) {return res.status(400).json({message: "Dados incomplementos!", success: false})}
 
     try {
-        const [isAlreadyCreated] = await pool.promise().query('SELECT * FROM Category WHERE nameCategory = ? AND User_id = ?', [nameCategory, user_id])
+        const [isAlreadyCreated] = await pool.query('SELECT * FROM Category WHERE nameCategory = ? AND User_id = ?', [nameCategory, user_id])
 
         if(isAlreadyCreated.length > 0){
             return res.status(409).json({
@@ -53,7 +53,7 @@ exports.createCategory = async (req, res) => {
             })
         }
 
-        const[result] = await pool.promise().query('INSERT INTO Category(nameCategory, User_idUser) VALUES (?, ?)', [nameCategory, user_id])
+        const[result] = await pool.query('INSERT INTO Category(nameCategory, User_idUser) VALUES (?, ?)', [nameCategory, user_id])
 
         return res.status(201).json({
             message: "Categoria criada com sucesso",

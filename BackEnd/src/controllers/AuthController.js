@@ -69,6 +69,8 @@ exports.GenerateOtp = (req, res) => {
       message: "Preencha todos os campos de cadastro",
     });
   } else {
+    pool.execute("DELETE FROM OTP WHERE expiresAt < NOW()")
+
     pool.query(
       "SELECT email, nameUser FROM User WHERE email = ?",
       [email],
@@ -179,7 +181,7 @@ exports.VerificationOtp = (req, res) => {
   }
 
   pool.query(
-    "SELECT * FROM Otp where email = ? and otp = ?",
+    "SELECT * FROM OTP where email = ? and otp = ?",
     [email, otp],
     (err, result) => {
       if (err) {
