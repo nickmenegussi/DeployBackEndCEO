@@ -178,8 +178,10 @@ exports.VerificationOtp = (req, res) => {
     });
   }
 
+  pool.query("DELETE FROM OTP WHERE expiresAt < NOW()")
+
   pool.query(
-    "SELECT * FROM Otp where email = ? and otp = ?",
+    "SELECT * FROM OTP where email = ? and otp = ?",
     [email, otp],
     (err, result) => {
       if (err) {
