@@ -180,7 +180,7 @@ exports.VerificationOtp = async (req, res) => {
     });
   }
 
-  await pool.execute('DELETE FROM OTP WHERE expiresAt < NOW()')
+  pool.query("DELETE FROM OTP WHERE expiresAt < NOW()")
 
   pool.query(
     "SELECT * FROM OTP where email = ? and otp = ?",
