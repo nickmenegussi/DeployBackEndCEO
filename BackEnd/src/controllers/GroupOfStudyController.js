@@ -1,7 +1,5 @@
-// controllers/CategoryController.js
 const pool = require("../config/promise");
 
-// GET /category  -> lista categorias (nome e id)
 exports.getGroups = async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -22,41 +20,34 @@ exports.getGroups = async (req, res) => {
   }
 };
 
-// GET /category/:nameCategory -> lista tópicos por categoria
 exports.getGroupsByType = async (req, res) => {
   const { TypeGroup } = req.params;
 
   if (!TypeGroup) {
-    return res
-      .status(400)
-      .json({
-        message: "Parâmetro nameCategory é obrigatório.",
-        success: false,
-      });
+    return res.status(400).json({
+      message: "Parâmetro nameCategory é obrigatório.",
+      success: false,
+    });
   }
 
   try {
     const [rows] = await pool.query(
-      `
-      SELECT 
+      `SELECT 
         g.*,
         f.apelido AS FacilitatorName
-      FROM GroupOfStudy g
-      JOIN Facilitadores f ON f.idFacilitadores = g.IdFacilitador
-      WHERE g.TypeGroup = ?
-      ORDER BY g.CreatedAt DESC
-      `,
+       FROM GroupOfStudy g
+       JOIN Facilitadores f ON f.idFacilitadores = g.IdFacilitador
+       WHERE g.TypeGroup = ?
+       ORDER BY g.CreatedAt DESC`,
       [TypeGroup]
     );
 
     if (rows.length === 0) {
-      return res
-        .status(404)
-        .json({
-          message: "Nenhum tópico encontrado para essa categoria.",
-          success: false,
-          data: [],
-        });
+      return res.status(404).json({
+        message: "Nenhum tópico encontrado para essa categoria.",
+        success: false,
+        data: [],
+      });
     }
 
     return res.status(200).json({
@@ -87,8 +78,7 @@ exports.createGroup = async (req, res) => {
 
   if (!IdFacilitador || !NameStudy || !Description || !TypeGroup) {
     return res.status(400).json({
-      message:
-        "Dados incompletos! (Facilitador, Nome, Descrição e Tipo são obrigatórios)",
+      message: "Dados incompletos! (Facilitador, Nome, Descrição e Tipo são obrigatórios)",
       success: false,
     });
   }
@@ -96,9 +86,9 @@ exports.createGroup = async (req, res) => {
   try {
     const [exists] = await pool.query(
       `SELECT IdGroupOfStudy 
-     FROM GroupOfStudy 
-     WHERE NameStudy = ? AND TypeGroup = ? 
-     LIMIT 1`,
+       FROM GroupOfStudy 
+       WHERE NameStudy = ? AND TypeGroup = ? 
+       LIMIT 1`,
       [NameStudy, TypeGroup]
     );
 
@@ -110,11 +100,9 @@ exports.createGroup = async (req, res) => {
     }
 
     const [result] = await pool.query(
-      `
-    INSERT INTO GroupOfStudy
-    (IdFacilitador, NameStudy, Description, DayOfWeek, StartTime, EndTime, TypeGroup, Requirements)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `,
+      `INSERT INTO GroupOfStudy
+       (IdFacilitador, NameStudy, Description, DayOfWeek, StartTime, EndTime, TypeGroup, Requirements)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         IdFacilitador,
         NameStudy,
@@ -147,6 +135,6 @@ exports.createGroup = async (req, res) => {
     return res.status(500).json({
       message: "Erro interno do servidor ao criar grupo de estudo.",
       success: false,
-    })
+    });
   }
-}
+};

@@ -1,484 +1,413 @@
 const pool = require("../config/promise")
 
-exports.viewAllBooks = (req, res) => {
-    pool.query('SELECT * FROM Book',(err, result) => {
-        if(err){
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err
-            })
-        }  else {
-            return res.status(200).json({
-              message: "Sucesso ao exibir os trabalhos voluntários.",
-              success: true,
-              data: result
-            })
-          }
-    })
+exports.viewAllBooks = async (req, res) => {
+    try {
+        const [result] = await pool.query('SELECT * FROM Book');
+        
+        return res.status(200).json({
+            message: "Sucesso ao exibir os livros.",
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        console.error("Erro ao buscar livros:", error);
+        return res.status(500).json({
+            message: "Erro ao se conectar com o servidor.",
+            success: false,
+        });
+    }
 }
 
-exports.viewOnlyOneBook = (req, res) => {
-    const idLibrary = req.params.LibraryId
-    pool.query('SELECT * FROM Book where idLibrary = ?', [idLibrary] ,(err, result) => {
-        if(err){
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err
-            })
-        }  
+exports.viewOnlyOneBook = async (req, res) => {
+    const idLibrary = req.params.LibraryId;
+    
+    try {
+        const [result] = await pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary]);
         
         if (result.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: `O livro com o id ${idLibrary} não existe no nosso sistema.`,
-            })
-        } else {
-            return res.status(200).json({
-              message: "Sucesso ao exibir os trabalhos voluntários.",
-              success: true,
-              data: result
-            })
-          }
-    })
+            });
+        }
+
+        return res.status(200).json({
+            message: "Sucesso ao exibir o livro.",
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        console.error("Erro ao buscar livro:", error);
+        return res.status(500).json({
+            message: "Erro ao se conectar com o servidor.",
+            success: false,
+        });
+    }
 }
 
-exports.createBook = (req, res) => {
-    const image = req.file ? req.file.filename : null
+exports.createBook = async (req, res) => {
+    const image = req.file ? req.file.filename : null;
+    const { namebook, authorBook, overviewBook, curiosityBook, tagsBook, bookQuantity, status_Available, bookCategory } = req.body;
 
-    const {namebook, authorBook,overviewBook,curiosityBook ,tagsBook , bookQuantity ,status_Available, bookCategory} = req.body
-
-    if(!namebook || !authorBook || !tagsBook  || !overviewBook || !image || !curiosityBook  || !bookQuantity || !status_Available || !bookCategory){
+    if (!namebook || !authorBook || !tagsBook || !overviewBook || !image || !curiosityBook || !bookQuantity || !status_Available || !bookCategory) {
         return res.status(400).json({
             success: false,
             message: "Preencha todos os campos de cadastro",
-            data: console.log(namebook, authorBook,overviewBook, image, curiosityBook ,tagsBook , bookQuantity ,status_Available)
-        })
+        });
     }
 
-    if(tagsBook !== 'Obras Básicas' && tagsBook !== "Obras complementares"){
-        return res.status(400).json({
-            success: false,
-            message: 'Você digitou uma opção que não é válida no nosso sistema. Tente novamente.'        })
-    } 
-    
-    if(status_Available !== 'disponível' && status_Available !== 'reservado' && status_Available !== 'emprestado' && status_Available !== 'indisponível'){
+    if (tagsBook !== 'Obras Básicas' && tagsBook !== "Obras complementares") {
         return res.status(400).json({
             success: false,
             message: 'Você digitou uma opção que não é válida no nosso sistema. Tente novamente.'
-        })
-    }  
-
-    if(bookCategory !== 'empréstimo' && bookCategory !== "reserva" ){
+        });
+    }
+    
+    if (status_Available !== 'disponível' && status_Available !== 'reservado' && status_Available !== 'emprestado' && status_Available !== 'indisponível') {
         return res.status(400).json({
             success: false,
             message: 'Você digitou uma opção que não é válida no nosso sistema. Tente novamente.'
-        })
-    }  
+        });
+    }
 
-        pool.query('SELECT * FROM Book WHERE status_Available = ? AND image = ? AND bookCategory = ? AND namebook = ? AND authorBook = ? AND tagsBook = ? AND overviewBook = ? AND curiosityBook = ?',
-  [status_Available, image, bookCategory, namebook, authorBook, tagsBook, overviewBook, curiosityBook], (err, result) => {
-            if(err){
-                return res.status(500).json({
-                    message: "Erro ao se conectar com o servidor.",
-                    success: false,
-                    data: err
-                })
-            }
+    if (bookCategory !== 'empréstimo' && bookCategory !== "reserva") {
+        return res.status(400).json({
+            success: false,
+            message: 'Você digitou uma opção que não é válida no nosso sistema. Tente novamente.'
+        });
+    }
 
-            if(result.length > 0){
-                return res.status(400).json({
-                    message: 'Esse livro já possui um cadastro, por favor, tente outras informações.'
-                })
-            }
-            pool.query('INSERT INTO Book(namebook,authorBook, image ,overviewBook,curiosityBook ,tagsBook, bookQuantity ,status_Available, bookCategory) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?) ',[namebook, authorBook, image, overviewBook,curiosityBook ,tagsBook, bookQuantity ,status_Available, bookCategory], (err, result) => {
-                if(err){
-                    return res.status(500).json({
-                        message: "Erro ao se conectar com o servidor.",
-                        success: false,
-                        data: err
-                    })
-                } else {
-                    return res.status(201).json({
-                        success: true,
-                        message: "Livro cadastrado com sucesso",
-                        data: result,
-                    })
-                }
-            })
-        })
-    
+    try {
+        const [existingBook] = await pool.query(
+            'SELECT * FROM Book WHERE status_Available = ? AND image = ? AND bookCategory = ? AND namebook = ? AND authorBook = ? AND tagsBook = ? AND overviewBook = ? AND curiosityBook = ?',
+            [status_Available, image, bookCategory, namebook, authorBook, tagsBook, overviewBook, curiosityBook]
+        );
+
+        if (existingBook.length > 0) {
+            return res.status(400).json({
+                message: 'Esse livro já possui um cadastro, por favor, tente outras informações.'
+            });
+        }
+
+        const [result] = await pool.query(
+            'INSERT INTO Book(namebook, authorBook, image, overviewBook, curiosityBook, tagsBook, bookQuantity, status_Available, bookCategory) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [namebook, authorBook, image, overviewBook, curiosityBook, tagsBook, bookQuantity, status_Available, bookCategory]
+        );
+
+        return res.status(201).json({
+            success: true,
+            message: "Livro cadastrado com sucesso",
+            data: result,
+        });
+    } catch (error) {
+        console.error("Erro ao criar livro:", error);
+        return res.status(500).json({
+            message: "Erro ao se conectar com o servidor.",
+            success: false,
+        });
+    }
 }
 
 // Atualizar Nome do Livro
-exports.updateNameBook = (req, res) => {
-    const idLibrary = req.params.LibraryId
-    const { nameBook } = req.body
+exports.updateNameBook = async (req, res) => {
+    const idLibrary = req.params.LibraryId;
+    const { nameBook } = req.body;
 
     if (!nameBook) {
         return res.status(400).json({
             success: false,
             message: "Preencha todos os campos.",
-        })
+        });
     }
 
-    pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: "Erro ao se conectar com o servidor.",
-                data: err,
-            })
-        }
+    try {
+        const [existingBook] = await pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary]);
 
-        if (result.length === 0) {
+        if (existingBook.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: `O livro com o id ${idLibrary} não existe no nosso sistema.`,
-            })
+            });
         }
 
-        pool.query('UPDATE Book SET nameBook = ? WHERE idLibrary = ?', [nameBook, idLibrary], (err, result) => {
-            if(err) {
-                return res.status(500).json({
-                    success: false,
-                    message: "Erro ao atualizar o nome do livro.",
-                    data: err,
-                })
-            }
+        const [result] = await pool.query('UPDATE Book SET nameBook = ? WHERE idLibrary = ?', [nameBook, idLibrary]);
 
-            return res.status(200).json({
-                success: true,
-                message: "Nome do livro atualizado com sucesso.",
-            })
-        })
-    })
+        return res.status(200).json({
+            success: true,
+            message: "Nome do livro atualizado com sucesso.",
+        });
+    } catch (error) {
+        console.error("Erro ao atualizar nome do livro:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Erro ao atualizar o nome do livro.",
+        });
+    }
 }
 
 // Atualizar Autor do Livro
-exports.updateAuthorBook = (req, res) => {
-    const idLibrary = req.params.LibraryId
-    const { authorBook } = req.body
+exports.updateAuthorBook = async (req, res) => {
+    const idLibrary = req.params.LibraryId;
+    const { authorBook } = req.body;
 
     if (!authorBook) {
         return res.status(400).json({
             success: false,
             message: "Preencha todos os campos.",
-        })
+        });
     }
 
-    pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: "Erro ao se conectar com o servidor.",
-                data: err,
-            })
-        }
+    try {
+        const [existingBook] = await pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary]);
 
-        if (result.length === 0) {
+        if (existingBook.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: `O livro com o id ${idLibrary} não existe no nosso sistema.`,
-            })
+            });
         }
 
-        pool.query('UPDATE Book SET author = ? WHERE idLibrary = ?', [authorBook, idLibrary], (err, result) => {
-            if (err) {
-                return res.status(500).json({
-                    success: false,
-                    message: "Erro ao atualizar o autor.",
-                    data: err,
-                })
-            }
+        const [result] = await pool.query('UPDATE Book SET authorBook = ? WHERE idLibrary = ?', [authorBook, idLibrary]);
 
-            return res.status(200).json({
-                success: true,
-                message: "Autor atualizado com sucesso.",
-            })
-        })
-    })
+        return res.status(200).json({
+            success: true,
+            message: "Autor atualizado com sucesso.",
+        });
+    } catch (error) {
+        console.error("Erro ao atualizar autor:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Erro ao atualizar o autor.",
+        });
+    }
 }
 
-// Atualizar Data do Livro
-exports.updateTagBook = (req, res) => {
-    const idLibrary = req.params.LibraryId
-    const { tagsBook } = req.body
+// Atualizar Tag do Livro
+exports.updateTagBook = async (req, res) => {
+    const idLibrary = req.params.LibraryId;
+    const { tagsBook } = req.body;
 
     if (!tagsBook) {
         return res.status(400).json({
             success: false,
             message: "Preencha todos os campos.",
-        })
+        });
     }
 
-    pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: "Erro ao se conectar com o servidor.",
-                data: err,
-            })
-        }
+    try {
+        const [existingBook] = await pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary]);
 
-        if (result.length === 0) {
+        if (existingBook.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: `O livro com o id ${idLibrary} não existe no nosso sistema.`,
-            })
+            });
         }
 
-        pool.query('UPDATE Book SET tagsBook = ? WHERE idLibrary = ?', [tagsBook, idLibrary], (err, result) => {
-            if (err) {
-                return res.status(500).json({
-                    success: false,
-                    message: "Erro ao atualizar a classificação do livro.",
-                    data: err,
-                })
-            }
+        const [result] = await pool.query('UPDATE Book SET tagsBook = ? WHERE idLibrary = ?', [tagsBook, idLibrary]);
 
-            return res.status(200).json({
-                success: true,
-                message: "Classificação do livro atualizada com sucesso.",
-                data: result
-            })
-        })
-    })
+        return res.status(200).json({
+            success: true,
+            message: "Classificação do livro atualizada com sucesso.",
+            data: result
+        });
+    } catch (error) {
+        console.error("Erro ao atualizar tag:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Erro ao atualizar a classificação do livro.",
+        });
+    }
 }
 
 // Atualizar Descrição do Livro
-exports.updateOverView = (req, res) => {
-    const idLibrary = req.params.LibraryId
-    const { overviewBook } = req.body
+exports.updateOverView = async (req, res) => {
+    const idLibrary = req.params.LibraryId;
+    const { overviewBook } = req.body;
 
     if (!overviewBook) {
         return res.status(400).json({
             success: false,
             message: "Preencha todos os campos.",
-        })
+        });
     }
 
-    pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: "Erro ao se conectar com o servidor.",
-                data: err,
-            })
-        }
+    try {
+        const [existingBook] = await pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary]);
 
-        if (result.length === 0) {
+        if (existingBook.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: `O livro com o id ${idLibrary} não existe no nosso sistema.`,
-            })
+            });
         }
 
-        pool.query('UPDATE Book SET overviewBook = ? WHERE idLibrary = ?', [overviewBook, idLibrary], (err, result) => {
-            if (err) {
-                return res.status(500).json({
-                    success: false,
-                    message: "Erro ao atualizar a descrição do livro.",
-                    data: err,
-                })
-            }
+        const [result] = await pool.query('UPDATE Book SET overviewBook = ? WHERE idLibrary = ?', [overviewBook, idLibrary]);
 
-            return res.status(200).json({
-                success: true,
-                message: "Descrição do livro atualizada com sucesso.",
-                data: result
-            })
-        })
-    })
+        return res.status(200).json({
+            success: true,
+            message: "Descrição do livro atualizada com sucesso.",
+            data: result
+        });
+    } catch (error) {
+        console.error("Erro ao atualizar overview:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Erro ao atualizar a descrição do livro.",
+        });
+    }
 }
 
-// Atualizar Descrição do Livro
-exports.updateCuriosityBook = (req, res) => {
-    const idLibrary = req.params.LibraryId
-    const { curiosityBook } = req.body
+// Atualizar Curiosidade do Livro
+exports.updateCuriosityBook = async (req, res) => {
+    const idLibrary = req.params.LibraryId;
+    const { curiosityBook } = req.body;
 
     if (!curiosityBook) {
         return res.status(400).json({
             success: false,
             message: "Preencha todos os campos.",
-        })
+        });
     }
 
-    pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: "Erro ao se conectar com o servidor.",
-                data: err,
-            })
-        }
+    try {
+        const [existingBook] = await pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary]);
 
-        if (result.length === 0) {
+        if (existingBook.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: `O livro com o id ${idLibrary} não existe no nosso sistema.`,
-            })
+            });
         }
 
-        pool.query('UPDATE Book SET curiosityBook = ? WHERE idLibrary = ?', [curiosityBook, idLibrary], (err, result) => {
-            if (err) {
-                return res.status(500).json({
-                    success: false,
-                    message: "Erro ao atualizar a curiosidade do livro.",
-                    data: err,
-                })
-            }
+        const [result] = await pool.query('UPDATE Book SET curiosityBook = ? WHERE idLibrary = ?', [curiosityBook, idLibrary]);
 
-            return res.status(200).json({
-                success: true,
-                message: "Curiosidade do livro atualizada com sucesso.",
-                data: result
-            })
-        })
-    })
+        return res.status(200).json({
+            success: true,
+            message: "Curiosidade do livro atualizada com sucesso.",
+            data: result
+        });
+    } catch (error) {
+        console.error("Erro ao atualizar curiosidade:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Erro ao atualizar a curiosidade do livro.",
+        });
+    }
 }
 
-exports.updateBookQuantity = (req, res) => {
-    const idLibrary = req.params.LibraryId
-    const { bookQuantity } = req.body
+exports.updateBookQuantity = async (req, res) => {
+    const idLibrary = req.params.LibraryId;
+    const { bookQuantity } = req.body;
 
     if (!bookQuantity) {
         return res.status(400).json({
             success: false,
             message: "Preencha todos os campos.",
-        })
+        });
     }
 
-    pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: "Erro ao se conectar com o servidor.",
-                data: err,
-            })
-        }
+    try {
+        const [existingBook] = await pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary]);
 
-        if (result.length === 0) {
+        if (existingBook.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: `O livro com o id ${idLibrary} não existe no nosso sistema.`,
-            })
+            });
         }
 
-        pool.query('UPDATE Book SET bookQuantity = ? WHERE idLibrary = ?', [bookQuantity, idLibrary], (err, result) => {
-            if (err) {
-                return res.status(500).json({
-                    success: false,
-                    message: "Erro ao atualizar a quantidade do livro.",
-                    data: err,
-                })
-            }
+        const [result] = await pool.query('UPDATE Book SET bookQuantity = ? WHERE idLibrary = ?', [bookQuantity, idLibrary]);
 
-            return res.status(200).json({
-                success: true,
-                message: "Quantidade do livro atualizada com sucesso.",
-            })
-        })
-    })
+        return res.status(200).json({
+            success: true,
+            message: "Quantidade do livro atualizada com sucesso.",
+        });
+    } catch (error) {
+        console.error("Erro ao atualizar quantidade:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Erro ao atualizar a quantidade do livro.",
+        });
+    }
 }
 
-exports.updateStatusAvailable = (req, res) => {
-    const idLibrary = req.params.LibraryId
-    const { status_Available } = req.body
+exports.updateStatusAvailable = async (req, res) => {
+    const idLibrary = req.params.LibraryId;
+    const { status_Available } = req.body;
 
     if (!status_Available) {
         return res.status(400).json({
             success: false,
             message: "Preencha todos os campos.",
-        })
+        });
     }
 
-    pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary], (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: "Erro ao se conectar com o servidor.",
-                data: err,
-            })
-        }
+    if (status_Available !== 'disponível' && status_Available !== 'reservado' && status_Available !== 'emprestado' && status_Available !== 'indisponível') {
+        return res.status(400).json({
+            success: false,
+            message: 'Você digitou uma opção que não é válida no nosso sistema. Tente novamente.',
+        });
+    }
 
-        if (result.length === 0) {
+    try {
+        const [existingBook] = await pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary]);
+
+        if (existingBook.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: `O livro com o id ${idLibrary} não existe no nosso sistema.`,
-            })
+            });
         }
-        
-        if(status_Available !== 'disponível' && status_Available !== 'reservado' && status_Available !== 'emprestado' && status_Available !== 'indisponível'){
-            return res.status(400).json({
-                success: false,
-                message: 'Você digitou uma opção que não é válida no nosso sistema. Tente novamente.',
-                data: err
-            })
-        } else {
-            pool.query('UPDATE Book SET status_Available = ? WHERE idLibrary = ?', [status_Available, idLibrary], (err, result) => {
-                if (err) {
-                    return res.status(500).json({
-                        success: false,
-                        message: "Erro ao atualizar a disponibilidade do livro.",
-                        data: err,
-                    })
-                }
 
-                return res.status(200).json({
-                    success: true,
-                    message: "Disponibilidade do livro atualizada com sucesso.",
-                    data: result
-                })
-            })
-        }
-    })
+        const [result] = await pool.query('UPDATE Book SET status_Available = ? WHERE idLibrary = ?', [status_Available, idLibrary]);
+
+        return res.status(200).json({
+            success: true,
+            message: "Disponibilidade do livro atualizada com sucesso.",
+            data: result
+        });
+    } catch (error) {
+        console.error("Erro ao atualizar status:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Erro ao atualizar a disponibilidade do livro.",
+        });
+    }
 }
 
-exports.deleteBook = (req, res) => {
-    const idLibrary = req.params.LibraryId
+exports.deleteBook = async (req, res) => {
+    const idLibrary = req.params.LibraryId;
 
-    pool.query('SELECT * FROM Book where idLibrary = ?', [idLibrary], (err, result) => {
-        if(err){
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err
-            })
-        }
+    try {
+        const [existingBook] = await pool.query('SELECT * FROM Book WHERE idLibrary = ?', [idLibrary]);
 
-        if(result.length === 0){
+        if (existingBook.length === 0) {
             return res.status(404).json({
-                message: `O Livro com o id ${idLibrary} não existe no nosso sistema. `,
+                message: `O Livro com o id ${idLibrary} não existe no nosso sistema.`,
                 success: false,
-                data: err
-            })
-        } else {
-            pool.query('DELETE FROM Book where idLibrary = ?', [idLibrary], (err, result) => {
-                if(err){
-                    return res.status(500).json({
-                        message: "Erro ao se conectar com o servidor.",
-                        success: false,
-                        data: err
-                    })
-                }
-
-                if(result.affectedRows === 0){
-                    return res.status(404).json({
-                        message: 'Erro ao deletar Livro. Verifique os dados e tente novamente.',
-                        success: false,
-                        data: err
-                    })
-                } else {
-                    return res.status(200).json({
-                        message: 'Livro deletado com sucesso',
-                        success: true,
-                        data: result
-                    })
-                }
-                
-            })
+            });
         }
-    })
+
+        const [result] = await pool.query('DELETE FROM Book WHERE idLibrary = ?', [idLibrary]);
+
+        if (result.affectedRows === 0) {
+            return res.status(400).json({
+                message: 'Erro ao deletar Livro. Verifique os dados e tente novamente.',
+                success: false,
+            });
+        }
+
+        return res.status(200).json({
+            message: 'Livro deletado com sucesso',
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        console.error("Erro ao deletar livro:", error);
+        return res.status(500).json({
+            message: "Erro ao se conectar com o servidor.",
+            success: false,
+        });
+    }
 }

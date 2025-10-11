@@ -1,94 +1,96 @@
 const pool = require("../config/promise")
 
-exports.viewVolunteerWork = (req, res) => {
-    pool.query('SELECT * FROM VolunteerWork',(err, result) => {
-        if(err){
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err
-            })
-        }  else {
-            return res.status(200).json({
-              message: "Sucesso ao exibir os trabalhos voluntários.",
-              success: true,
-              data: result
-            })
-          }
-    })
+exports.viewVolunteerWork = async (req, res) => {
+    try {
+        const [result] = await pool.query('SELECT * FROM VolunteerWork');
+
+        return res.status(200).json({
+            message: "Sucesso ao exibir os trabalhos voluntários.",
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        console.error("Erro ao buscar trabalhos voluntários:", error);
+        return res.status(500).json({
+            message: "Erro ao se conectar com o servidor.",
+            success: false,
+        });
+    }
 }
 
-exports.viewOnlyVolunteerWork = (req, res) => {
+exports.viewOnlyVolunteerWork = async (req, res) => {
     const idVolunteerWork = req.params.idVolunteerWork
-    
-    pool.query('SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', [idVolunteerWork] ,(err, result) => {
-        if(err){
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err
-            })
-        }  
-        if(result.length === 0){
+
+    try {
+        const [result] = await pool.query(
+            'SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', 
+            [idVolunteerWork]
+        );
+
+        if (result.length === 0) {
             return res.status(404).json({
-                message: `Erro ao exibir o trabalho voluntário com o id ${idVolunteerWork}. Tente novamente!`
-            })
+                message: `Erro ao exibir o trabalho voluntário com o id ${idVolunteerWork}. Tente novamente!`,
+                success: false
+            });
         }
-        else {
-            return res.status(200).json({
-              message: "Sucesso ao exibir os trabalhos voluntários.",
-              success: true,
-              data: result
-            })
-          }
-    })
+
+        return res.status(200).json({
+            message: "Sucesso ao exibir os trabalhos voluntários.",
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        console.error("Erro ao buscar trabalho voluntário:", error);
+        return res.status(500).json({
+            message: "Erro ao se conectar com o servidor.",
+            success: false,
+        });
+    }
 }
 
-exports.createVolunteerWork = (req, res) => {
-    const {nameVolunteerWork, address, dateVolunteerWork, work_description} = req.body
+exports.createVolunteerWork = async (req, res) => {
+    const { nameVolunteerWork, address, dateVolunteerWork, work_description } = req.body
 
-    if(!nameVolunteerWork || !address || !dateVolunteerWork  || !work_description){
+    if (!nameVolunteerWork || !address || !dateVolunteerWork || !work_description) {
         return res.status(400).json({
             success: false,
             message: "Preencha todos os campos de cadastro",
-        })
+        });
     }
 
-    pool.query('SELECT * FROM VolunteerWork where nameVolunteerWork = ? AND address = ? AND dateVolunteerWork AND work_description = ?', [nameVolunteerWork, address, dateVolunteerWork, work_description], (err, result) => {
-        if(err){
-            return res.status(500).json({   
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err
-            })
-        }
-        
-        if(result.length > 0){ 
+    try {
+        const [existingWork] = await pool.query(
+            'SELECT * FROM VolunteerWork WHERE nameVolunteerWork = ? AND address = ? AND dateVolunteerWork = ? AND work_description = ?',
+            [nameVolunteerWork, address, dateVolunteerWork, work_description]
+        );
+
+        if (existingWork.length > 0) {
             return res.status(409).json({
                 message: "Trabalho voluntário já cadastrado.",
                 success: false,
-                data: err
-            })
+            });
         }
-        pool.query('INSERT INTO VolunteerWork(nameVolunteerWork,address,dateVolunteerWork,work_description) VALUES(?, ?, ?, ?) ',[nameVolunteerWork, address, dateVolunteerWork, work_description], (err, result) => {
-            if(err){
-                return res.status(500).json({
-                    message: "Erro ao se conectar com o servidor.",
-                    success: false,
-                    data: err
-                })
-            } 
-            return res.status(201).json({
-                success: true,
-                message: "Trabalho Voluntário cadastrado com sucesso",
-                data: result,
-            })
-            
-        })
-    })
+
+        const [result] = await pool.query(
+            'INSERT INTO VolunteerWork(nameVolunteerWork, address, dateVolunteerWork, work_description) VALUES(?, ?, ?, ?)',
+            [nameVolunteerWork, address, dateVolunteerWork, work_description]
+        );
+
+        return res.status(201).json({
+            success: true,
+            message: "Trabalho Voluntário cadastrado com sucesso",
+            data: result,
+        });
+    } catch (error) {
+        console.error("Erro ao criar trabalho voluntário:", error);
+        return res.status(500).json({
+            message: "Erro ao se conectar com o servidor.",
+            success: false,
+        });
+    }
 }
 
-exports.updateNameVolunteerWork = (req, res) => {
+exports.updateNameVolunteerWork = async (req, res) => {
     const idVolunteerWork = req.params.idVolunteerWork
     const { nameVolunteerWork } = req.body
 
@@ -96,135 +98,41 @@ exports.updateNameVolunteerWork = (req, res) => {
         return res.status(400).json({
             success: false,
             message: "Preencha todos os campos.",
-        })
+        });
     }
 
-    pool.query('SELECT * FROM VolunteerWork where idVolunteerWokr =?', [idVolunteerWork], (err, result) => {
-        if(err){
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
+    try {
+        const [existingWork] = await pool.query(
+            'SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?',
+            [idVolunteerWork]
+        );
+
+        if (existingWork.length === 0) {
+            return res.status(404).json({
+                message: `Trabalho voluntário não encontrado no nosso sistema.`,
                 success: false,
-                data: err
-            })
+            });
         }
 
-        if(result.length === 0){
-            return res.status(404).json({
-                message: `Trabalho voluntário não encontrado no nosso sistema. `,
-                success: false,
-                data: err
-            })
-        } 
+        const [result] = await pool.query(
+            'UPDATE VolunteerWork SET nameVolunteerWork = ? WHERE idVolunteerWork = ?',
+            [nameVolunteerWork, idVolunteerWork]
+        );
 
-        pool.query('UPDATE VolunteerWork SET nameVolunteerWork = ? WHERE idVolunteerWork = ?', [nameVolunteerWork, idVolunteerWork], (err, result) => {
-            if (err) {
-                return res.status(500).json({
-                    success: false,
-                    message: "Erro ao se conectar com o servidor.",
-                    data: err,
-                })
-            }
-
-            return res.status(201).json({
-                success: true,
-                message: "Nome atualizado com sucesso.",
-            })
-                
-         })
-    })
-}
-
-exports.updateTimeVolunteerWork = (req, res) => {
-    const idVolunteerWork = req.params.idVolunteerWork
-    const {timeVolunteerWork} = req.body
-
-    if(!timeVolunteerWork) {
-        return res.status(400).json({
+        return res.status(200).json({
+            success: true,
+            message: "Nome atualizado com sucesso.",
+        });
+    } catch (error) {
+        console.error("Erro ao atualizar nome do trabalho voluntário:", error);
+        return res.status(500).json({
             success: false,
-            message: "Preencha todos os campos.",
-        })
+            message: "Erro ao se conectar com o servidor.",
+        });
     }
-
-    pool.query('SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: "Erro ao se conectar com o servidor.",
-                data: err,
-            })
-        }
-
-        if (result.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: `O Trabalho voluntário com o id ${idVolunteerWork} não existe no nosso sistema.`,
-            })
-        }
-
-        pool.query('UPDATE VolunteerWork SET timeVolunteerWork = ? WHERE idVolunteerWork = ?', [timeVolunteerWork, idVolunteerWork], (err, result) => {
-            if (err) {
-                return res.status(500).json({
-                    success: false,
-                    message: "Erro ao atualizar o nome.",
-                    data: err,
-                })
-            }
-
-            return res.status(201).json({
-                success: true,
-                message: "Horário atualizado com sucesso.",
-            })
-        })
-    })
 }
 
-// Atualizar Nome do Trabalho Voluntário
-exports.updateNameVolunteerWork = (req, res) => {
-    const idVolunteerWork = req.params.idVolunteerWork
-    const { nameVolunteerWork } = req.body
-
-    if (!nameVolunteerWork) {
-        return res.status(400).json({
-            success: false,
-            message: "Preencha todos os campos.",
-        })
-    }
-
-    pool.query('SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: "Erro ao se conectar com o servidor.",
-                data: err,
-            })
-        }
-
-        if (result.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: `O Trabalho voluntário com o id ${idVolunteerWork} não existe no nosso sistema.`,
-            })
-        }
-
-        pool.query('UPDATE VolunteerWork SET nameVolunteerWork = ? WHERE idVolunteerWork = ?', [nameVolunteerWork, idVolunteerWork], (err, result) => {
-            if (err) {
-                return res.status(500).json({
-                    success: false,
-                    message: "Erro ao atualizar o nome.",
-                    data: err,
-                })
-            }
-
-            return res.status(201).json({
-                success: true,
-                message: "Nome atualizado com sucesso.",
-            })
-        })
-    })
-}
-
-// Atualizar Endereço do Trabalho Voluntário
-exports.updateAddressVolunteerWork = (req, res) => {
+exports.updateAddressVolunteerWork = async (req, res) => {
     const idVolunteerWork = req.params.idVolunteerWork
     const { address } = req.body
 
@@ -232,44 +140,41 @@ exports.updateAddressVolunteerWork = (req, res) => {
         return res.status(400).json({
             success: false,
             message: "Preencha todos os campos.",
-        })
+        });
     }
 
-    pool.query('SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: "Erro ao se conectar com o servidor.",
-                data: err,
-            })
-        }
+    try {
+        const [existingWork] = await pool.query(
+            'SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?',
+            [idVolunteerWork]
+        );
 
-        if (result.length === 0) {
+        if (existingWork.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: `O Trabalho voluntário com o id ${idVolunteerWork} não existe no nosso sistema.`,
-            })
+            });
         }
 
-        pool.query('UPDATE VolunteerWork SET address = ? WHERE idVolunteerWork = ?', [address, idVolunteerWork], (err, result) => {
-            if (err) {
-                return res.status(500).json({
-                    success: false,
-                    message: "Erro ao atualizar o endereço.",
-                    data: err,
-                })
-            }
+        const [result] = await pool.query(
+            'UPDATE VolunteerWork SET address = ? WHERE idVolunteerWork = ?',
+            [address, idVolunteerWork]
+        );
 
-            return res.status(201).json({
-                success: true,
-                message: "Endereço atualizado com sucesso.",
-            })
-        })
-    })
+        return res.status(200).json({
+            success: true,
+            message: "Endereço atualizado com sucesso.",
+        });
+    } catch (error) {
+        console.error("Erro ao atualizar endereço:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Erro ao atualizar o endereço.",
+        });
+    }
 }
 
-// Atualizar Data do Trabalho Voluntário
-exports.updateDateVolunteerWork = (req, res) => {
+exports.updateDateVolunteerWork = async (req, res) => {
     const idVolunteerWork = req.params.idVolunteerWork
     const { dateVolunteerWork } = req.body
 
@@ -277,44 +182,41 @@ exports.updateDateVolunteerWork = (req, res) => {
         return res.status(400).json({
             success: false,
             message: "Preencha todos os campos.",
-        })
+        });
     }
 
-    pool.query('SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: "Erro ao se conectar com o servidor.",
-                data: err,
-            })
-        }
+    try {
+        const [existingWork] = await pool.query(
+            'SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?',
+            [idVolunteerWork]
+        );
 
-        if (result.length === 0) {
+        if (existingWork.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: `O Trabalho voluntário com o id ${idVolunteerWork} não existe no nosso sistema.`,
-            })
+            });
         }
 
-        pool.query('UPDATE VolunteerWork SET dateVolunteerWork = ? WHERE idVolunteerWork = ?', [dateVolunteerWork, idVolunteerWork], (err, result) => {
-            if (err) {
-                return res.status(500).json({
-                    success: false,
-                    message: "Erro ao atualizar a data.",
-                    data: err,
-                })
-            }
+        const [result] = await pool.query(
+            'UPDATE VolunteerWork SET dateVolunteerWork = ? WHERE idVolunteerWork = ?',
+            [dateVolunteerWork, idVolunteerWork]
+        );
 
-            return res.status(201).json({
-                success: true,
-                message: "Data do trabalho atualizada com sucesso.",
-            })
-        })
-    })
+        return res.status(200).json({
+            success: true,
+            message: "Data do trabalho atualizada com sucesso.",
+        });
+    } catch (error) {
+        console.error("Erro ao atualizar data:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Erro ao atualizar a data.",
+        });
+    }
 }
 
-// Atualizar Descrição do Trabalho Voluntário
-exports.updateWorkDescriptionVolunteerWork = (req, res) => {
+exports.updateWorkDescriptionVolunteerWork = async (req, res) => {
     const idVolunteerWork = req.params.idVolunteerWork
     const { work_description } = req.body
 
@@ -322,87 +224,78 @@ exports.updateWorkDescriptionVolunteerWork = (req, res) => {
         return res.status(400).json({
             success: false,
             message: "Preencha todos os campos.",
-        })
+        });
     }
 
-    pool.query('SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: "Erro ao se conectar com o servidor.",
-                data: err,
-            })
-        }
+    try {
+        const [existingWork] = await pool.query(
+            'SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?',
+            [idVolunteerWork]
+        );
 
-        if (result.length === 0) {
+        if (existingWork.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: `O Trabalho voluntário com o id ${idVolunteerWork} não existe no nosso sistema.`,
-            })
+            });
         }
 
-        pool.query('UPDATE VolunteerWork SET work_description = ? WHERE idVolunteerWork = ?', [work_description, idVolunteerWork], (err, result) => {
-            if (err) {
-                return res.status(500).json({
-                    success: false,
-                    message: "Erro ao atualizar a descrição.",
-                    data: err,
-                })
-            }
+        const [result] = await pool.query(
+            'UPDATE VolunteerWork SET work_description = ? WHERE idVolunteerWork = ?',
+            [work_description, idVolunteerWork]
+        );
 
-            return res.status(201).json({
-                success: true,
-                message: "Descrição do trabalho atualizada com sucesso.",
-            })
-        })
-    })
+        return res.status(200).json({
+            success: true,
+            message: "Descrição do trabalho atualizada com sucesso.",
+        });
+    } catch (error) {
+        console.error("Erro ao atualizar descrição:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Erro ao atualizar a descrição.",
+        });
+    }
 }
 
-
-
-exports.deleteVolunteerWork = (req, res) => {
+exports.deleteVolunteerWork = async (req, res) => {
     const idVolunteerWork = req.params.idVolunteerWork
 
-    pool.query('SELECT * FROM VolunteerWork where idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
-        if(err){
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err
-            })
-        }
+    try {
+        const [existingWork] = await pool.query(
+            'SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?',
+            [idVolunteerWork]
+        );
 
-        if(result.length === 0){
+        if (existingWork.length === 0) {
             return res.status(404).json({
-                message: `O usuário com o id ${idVolunteerWork}, não existe no nosso sistema. `,
+                message: `O trabalho voluntário com o id ${idVolunteerWork}, não existe no nosso sistema.`,
                 success: false,
-                data: err
-            })
-        } else {
-            pool.query('DELETE FROM VolunteerWork where idVolunteerWork = ?', [idVolunteerWork], (err, result) => {
-                if(err){
-                    return res.status(500).json({
-                        message: "Erro ao se conectar com o servidor.",
-                        success: false,
-                        data: err
-                    })
-                }
-
-                if(result.affectedRows === 0){
-                    return res.status(404).json({
-                        message: 'Trabalho voluntario não encontrado. Verifique os dados e tente novamente.',
-                        success: false,
-                        data: err
-                    })
-                } else {
-                    return res.status(201).json({
-                        message: 'Trabalho voluntário deletado com sucesso',
-                        success: true,
-                        data: err
-                    })
-                }
-                
-            })
+            });
         }
-    })
+
+        const [result] = await pool.query(
+            'DELETE FROM VolunteerWork WHERE idVolunteerWork = ?',
+            [idVolunteerWork]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(400).json({
+                message: 'Trabalho voluntario não encontrado. Verifique os dados e tente novamente.',
+                success: false,
+            });
+        }
+
+        return res.status(200).json({
+            message: 'Trabalho voluntário deletado com sucesso',
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        console.error("Erro ao deletar trabalho voluntário:", error);
+        return res.status(500).json({
+            message: "Erro ao se conectar com o servidor.",
+            success: false,
+        });
+    }
 }

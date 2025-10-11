@@ -2,67 +2,61 @@ const pool = require("../config/promise");
 const bcrypt = require("bcrypt");
 const cloudinary = require('../config/cloudinary')
 
-exports.viewOnlyUser = (req, res) => {
+exports.viewOnlyUser = async (req, res) => {
   const dataUser = req.data.id;
   const roleUser = req.data.role;
   const idUser = req.params.idUser;
 
-  if (
-    roleUser !== "Admin" &&
-    roleUser !== "SuperAdmin" &&
-    dataUser !== idUser
-  ) {
+  if (roleUser !== "Admin" && roleUser !== "SuperAdmin" && dataUser !== idUser) {
     return res.status(403).json({
       message: "Você não tem permissão para acessar este usuário.",
       success: false,
     });
   }
 
-  pool.query(
-    "SELECT * FROM User where idUser = ?",
-    [idUser],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Erro ao se conectar com o servidor.",
-          success: false,
-          data: err,
-        });
-      }
+  try {
+    const [result] = await pool.query(
+      "SELECT * FROM User WHERE idUser = ?",
+      [idUser]
+    );
 
-      if (result.length === 0) {
-        return res.status(404).json({
-          message: `O usuário com o id ${idUser}, não existe no nosso sistema`,
-          success: false,
-          data: err,
-        });
-      } else {
-        return res.status(200).json({
-          message: "Sucesso ao exibir o usuario.",
-          success: true,
-          data: result,
-        });
-      }
+    if (result.length === 0) {
+      return res.status(404).json({
+        message: `O usuário com o id ${idUser}, não existe no nosso sistema`,
+        success: false,
+      });
     }
-  );
+
+    return res.status(200).json({
+      message: "Sucesso ao exibir o usuario.",
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Erro ao buscar usuário:", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+    });
+  }
 };
 
-exports.viewAllUser = (req, res) => {
-  pool.query(`SELECT * FROM User`, (err, result) => {
-    if (err) {
-      return res.status(500).json({
-        message: "Erro ao se conectar com o servidor.",
-        success: false,
-        data: err,
-      });
-    } else {
-      return res.status(200).json({
-        message: "Sucesso ao exibir os usuarios.",
-        success: true,
-        data: result,
-      });
-    }
-  });
+exports.viewAllUser = async (req, res) => {
+  try {
+    const [result] = await pool.query(`SELECT * FROM User`);
+
+    return res.status(200).json({
+      message: "Sucesso ao exibir os usuarios.",
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Erro ao buscar usuários:", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+    });
+  }
 };
 
 exports.register = async (req, res) => {
@@ -75,71 +69,54 @@ exports.register = async (req, res) => {
       message: "Preencha todos os campos de cadastro",
     });
   }
-  const hash_password = await bcrypt.hash(password, 10);
-  pool.query(
-    "SELECT * FROM User where nameUser = ? AND email = ?",
-    [nameUser, email],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Erro ao se conectar com o servidor.",
-          success: false,
-          data: err,
-        });
-      }
 
-      if (result.length > 0) {
-        return res.status(422).json({
-          message: "Esse usário já existe, por favor, faça login.",
-          success: false,
-        });
-      }
+  try {
+    const hash_password = await bcrypt.hash(password, 10);
 
-      pool.query(
-        "SELECT idUser FROM User where email = ?",
-        [email],
-        (reqIsEmailAlreadyCreated, resEmailAlreadyCreated) => {
-          if (reqIsEmailAlreadyCreated) {
-            return res.status(500).json({
-              message: "Erro ao se conectar com o servidor.",
-              success: false,
-              data: err,
-            });
-          }
+    const [existingUser] = await pool.query(
+      "SELECT * FROM User WHERE nameUser = ? AND email = ?",
+      [nameUser, email]
+    );
 
-          if(resEmailAlreadyCreated.length > 0){
-            return res.status(409).json({
-              message: "Esse email já foi cadastrado, tente fazer login.", 
-              success: false
-            })
-          }
-
-          pool.query(
-            "INSERT INTO User(nameUser,email, password ,image_profile, status_permission) VALUES(?, ?, ?, ?, ?)",
-            [nameUser, email, hash_password, image_profile, "User"],
-            (err, result) => {
-              if (err) {
-                return res.status(500).json({
-                  message: "Erro ao se conectar com o servidor.",
-                  success: false,
-                  data: err,
-                });
-              } else {
-                return res.status(200).json({
-                  success: true,
-                  message: "Usuário cadastrado com sucesso",
-                  data: result,
-                });
-              }
-            }
-          );
-        }
-      );
+    if (existingUser.length > 0) {
+      return res.status(422).json({
+        message: "Esse usário já existe, por favor, faça login.",
+        success: false,
+      });
     }
-  );
+
+    const [existingEmail] = await pool.query(
+      "SELECT idUser FROM User WHERE email = ?",
+      [email]
+    );
+
+    if (existingEmail.length > 0) {
+      return res.status(409).json({
+        message: "Esse email já foi cadastrado, tente fazer login.",
+        success: false
+      });
+    }
+
+    const [result] = await pool.query(
+      "INSERT INTO User(nameUser, email, password, image_profile, status_permission) VALUES(?, ?, ?, ?, ?)",
+      [nameUser, email, hash_password, image_profile, "User"]
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: "Usuário cadastrado com sucesso",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Erro ao registrar usuário:", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+    });
+  }
 };
 
-exports.updateUser = (req, res) => {
+exports.updateUser = async (req, res) => {
   const idUser = req.data.id;
   const { email } = req.body;
 
@@ -150,49 +127,39 @@ exports.updateUser = (req, res) => {
     });
   }
 
-  pool.query(
-    "SELECT * FROM User WHERE idUser = ?",
-    [idUser],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Erro ao se conectar com o servidor.",
-          success: false,
-          data: err,
-        });
-      }
+  try {
+    const [existingUser] = await pool.query(
+      "SELECT * FROM User WHERE idUser = ?",
+      [idUser]
+    );
 
-      if (result.length === 0) {
-        return res.status(404).json({
-          message:
-            "Usuario não encontrado. Verifique os dados e tente novamente.",
-          success: false,
-          data: err,
-        });
-      } else {
-        const updateInformation = "UPDATE User set email = ? where idUser = ?";
-        pool.query(updateInformation, [email, idUser], (err, result) => {
-          if (result) {
-            return res.status(200).json({
-              message: "Sucesso ao alterar informações do usuário.",
-              success: true,
-              data: result,
-            });
-          } else {
-            return res.status(400).json({
-              message:
-                "Não foi possível alterar as informações. Tente novamente.",
-              success: false,
-              data: err,
-            });
-          }
-        });
-      }
+    if (existingUser.length === 0) {
+      return res.status(404).json({
+        message: "Usuario não encontrado. Verifique os dados e tente novamente.",
+        success: false,
+      });
     }
-  );
+
+    const [result] = await pool.query(
+      "UPDATE User SET email = ? WHERE idUser = ?",
+      [email, idUser]
+    );
+
+    return res.status(200).json({
+      message: "Sucesso ao alterar informações do usuário.",
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Erro ao atualizar usuário:", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+    });
+  }
 };
 
-exports.updateUserName = (req, res) => {
+exports.updateUserName = async (req, res) => {
   const idUser = req.data.id;
   const { nameUser } = req.body;
 
@@ -203,55 +170,46 @@ exports.updateUserName = (req, res) => {
     });
   }
 
-  pool.query(
-    "SELECT * FROM User WHERE idUser = ?",
-    [idUser],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          success: false,
-          message: "Erro ao se conectar com o servidor.",
-          data: err,
-        });
-      }
+  try {
+    const [existingUser] = await pool.query(
+      "SELECT * FROM User WHERE idUser = ?",
+      [idUser]
+    );
 
-      if (result.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: "Usuário não encontrado.",
-        });
-      }
-      pool.query(
-        "UPDATE User SET nameUser = ? WHERE idUser = ?",
-        [nameUser, idUser],
-        (err, result) => {
-          if (err) {
-            return res.status(500).json({
-              success: false,
-              message: "Erro ao se conectar com o servidor.",
-              data: err,
-            });
-          }
-
-          if (result.affectedRows === 0) {
-            return res.status(400).json({
-              success: false,
-              message: "Erro ao atualizar o nome do Usuário.",
-            });
-          }
-
-          return res.status(200).json({
-            success: true,
-            message: "Nome atualizado com sucesso.",
-            data: result,
-          });
-        }
-      );
+    if (existingUser.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Usuário não encontrado.",
+      });
     }
-  );
+
+    const [result] = await pool.query(
+      "UPDATE User SET nameUser = ? WHERE idUser = ?",
+      [nameUser, idUser]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Erro ao atualizar o nome do Usuário.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Nome atualizado com sucesso.",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Erro ao atualizar nome do usuário:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Erro ao se conectar com o servidor.",
+    });
+  }
 };
 
-exports.updateUserPassword = (req, res) => {
+exports.updateUserPassword = async (req, res) => {
   const idUser = req.data.id;
   const { newPassword, currentPassword, confirmedPassword } = req.body;
 
@@ -262,97 +220,65 @@ exports.updateUserPassword = (req, res) => {
     });
   }
 
-  pool.query(
-    "SELECT * FROM User WHERE idUser = ?",
-    [idUser],
-    async (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Erro ao se conectar com o servidor.",
-          success: false,
-          data: err,
-        });
-      }
+  try {
+    const [existingUser] = await pool.query(
+      "SELECT * FROM User WHERE idUser = ?",
+      [idUser]
+    );
 
-      if (result.length === 0) {
-        return res.status(404).json({
-          message:
-            "Usuario não encontrado. Verifique os dados e tente novamente.",
-          success: false,
-          data: err,
-        });
-      }
-      const user = result[0];
-
-      const passwordMatch = await bcrypt.compare(
-        currentPassword,
-        user.password
-      );
-      if (!passwordMatch) {
-        return res.status(404).json({
-          message: "A senha atual está incorreta. Por favor, digite novamente.",
-          success: false,
-        });
-      }
-
-      if (newPassword !== confirmedPassword) {
-        return res.status(404).json({
-          message:
-            "A nova senha digitado não coincide com a confirmada. Por favor, digite novamente.",
-        });
-      }
-
-      const hashPassword = await bcrypt.hash(newPassword, 15);
-
-      const updateInformation = "UPDATE User set password = ? where idUser = ?";
-      pool.query(
-        updateInformation,
-        [hashPassword, idUser],
-        (errPassword, resultPassword) => {
-          if (errPassword) {
-            return res.status(500).json({
-              message: "Erro ao se conectar com o servidor.",
-              success: false,
-              data: err,
-            });
-          }
-
-          if (resultPassword.affectedRows > 0) {
-            pool.query(
-              "SELECT * FROM USER WHERE idUser = ?",
-              [idUser],
-              (errUpdatePassword, resultUpdatePassword) => {
-                if (errUpdatePassword) {
-                  return res.status(400).json({
-                    message:
-                      "Não foi possível alterar as informações. Tente novamente.",
-                    success: true,
-                    data: errUpdatePassword,
-                  });
-                } else {
-                  return res.status(200).json({
-                    message: "Sucesso ao alterar a senha",
-                    success: false,
-                    data: resultUpdatePassword,
-                  });
-                }
-              }
-            );
-          } else {
-            return res.status(400).json({
-              message:
-                "Nenhuma alteração foi feita. Por favor, tente novamente.",
-              success: false,
-            });
-          }
-        }
-      );
+    if (existingUser.length === 0) {
+      return res.status(404).json({
+        message: "Usuario não encontrado. Verifique os dados e tente novamente.",
+        success: false,
+      });
     }
-  );
+
+    const user = existingUser[0];
+    const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+
+    if (!passwordMatch) {
+      return res.status(400).json({
+        message: "A senha atual está incorreta. Por favor, digite novamente.",
+        success: false,
+      });
+    }
+
+    if (newPassword !== confirmedPassword) {
+      return res.status(400).json({
+        message: "A nova senha digitada não coincide com a confirmada. Por favor, digite novamente.",
+        success: false,
+      });
+    }
+
+    const hashPassword = await bcrypt.hash(newPassword, 15);
+
+    const [result] = await pool.query(
+      "UPDATE User SET password = ? WHERE idUser = ?",
+      [hashPassword, idUser]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({
+        message: "Nenhuma alteração foi feita. Por favor, tente novamente.",
+        success: false,
+      });
+    }
+
+    return res.status(200).json({
+      message: "Sucesso ao alterar a senha",
+      success: true,
+    });
+  } catch (error) {
+    console.error("Erro ao atualizar senha:", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+    });
+  }
 };
 
 exports.updateUserImageProfile = async (req, res) => {
-  const image_profile = req.file
+  const image_profile = req.file;
   const idUser = req.data.id;
 
   if (!idUser || !image_profile) {
@@ -363,7 +289,7 @@ exports.updateUserImageProfile = async (req, res) => {
   }
 
   try {
-    const result = await new Promise((resolve, reject) => {
+    const resultUploadImage = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream({
         folder: "profile_pictures",
         resource_type: "image"
@@ -373,62 +299,42 @@ exports.updateUserImageProfile = async (req, res) => {
       })
       stream.end(image_profile.buffer)
     })
+    const imageUrl = resultUploadImage.secure_url
 
-    const imageUrl = result.secure_url
+    // const imageUrl = `/uploads/${image_profile.filename}`; // Usando caminho local
 
-    pool.query(
+    const [existingUser] = await pool.query(
       "SELECT * FROM User WHERE idUser = ?",
-      [idUser],
-      (err, userResult) => {
-        if (err) {
-          return res.status(500).json({
-            success: false,
-            message: "Erro ao consultar o usuário.",
-            data: err,
-          });
-        }
+      [idUser]
+    );
 
-        if (userResult.length === 0) {
-          return res.status(404).json({
-            success: false,
-            message: "Usuário não encontrado.",
-          });
-        }
+    if (existingUser.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Usuário não encontrado.",
+      });
+    }
 
-        // Atualiza imagem de perfil no banco
-        const updateQuery = "UPDATE User SET image_profile = ? WHERE idUser = ?";
-        pool.query(
-          updateQuery,
-          [imageUrl, idUser],
-          (errUpdate, updateResult) => {
-            if (errUpdate) {
-              return res.status(500).json({
-                success: false,
-                message: "Erro ao atualizar imagem no banco.",
-                data: errUpdate,
-              });
-            }
+    const [result] = await pool.query(
+      "UPDATE User SET image_profile = ? WHERE idUser = ?",
+      [imageUrl, idUser]
+    );
 
-            return res.status(200).json({
-              success: true,
-              message: "Imagem de perfil atualizada com sucesso.",
-              data: { image_profile: imageUrl },
-            });
-          }
-        );
-      })
-
+    return res.status(200).json({
+      success: true,
+      message: "Imagem de perfil atualizada com sucesso.",
+      data: { image_profile: imageUrl },
+    });
   } catch (error) {
-    console.error("Erro no upload para Cloudinary", error)
+    console.error("Erro ao atualizar imagem de perfil:", error);
     return res.status(500).json({
       success: false,
-      message: "Erro ao enviar imagem para o Cloudinary.",
-      data: err,
-    })
+      message: "Erro ao atualizar imagem de perfil.",
+    });
   }
 };
 
-exports.deleteAccountUser = (req, res) => {
+exports.deleteAccountUser = async (req, res) => {
   const idUser = req.params.idUser;
   const roleUser = req.data.role;
   const dataUser = req.data.id;
@@ -440,67 +346,50 @@ exports.deleteAccountUser = (req, res) => {
     });
   }
 
-  if (
-    roleUser !== "Admin" ||
-    (roleUser !== "SuperAdmin" && dataUser !== idUser)
-  ) {
+  if (roleUser !== "Admin" && roleUser !== "SuperAdmin" && dataUser !== idUser) {
     return res.status(403).json({
       message: "Você não tem permissão para deletar este usuário.",
       success: false,
     });
   }
 
-  pool.query(
-    `SELECT * FROM User WHERE idUser = ? WHERE status_permission = 'User'`,
-    [idUser],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Erro ao se conectar com o servidor.",
-          success: false,
-          data: err,
-        });
-      }
+  try {
+    const [existingUser] = await pool.query(
+      `SELECT * FROM User WHERE idUser = ? AND status_permission = 'User'`,
+      [idUser]
+    );
 
-      if (result.length === 0) {
-        return res.status(400).json({
-          message:
-            "Usuario não encontrado. Verifique os dados e tente novamente.",
-          success: false,
-          data: err,
-        });
-      } else {
-        pool.query(
-          "DELETE FROM User WHERE idUser = ?",
-          [idUser],
-          (err, result) => {
-            if (err) {
-              return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err,
-              });
-            }
-
-            if (result.affectedRows === 0) {
-              return res.status(400).json({
-                message:
-                  "Usuario não encontrado. Verifique os dados e tente novamente.",
-                success: false,
-                data: err,
-              });
-            } else {
-              return res.status(200).json({
-                message: "Usuário deletado com sucesso",
-                success: true,
-                data: result,
-              });
-            }
-          }
-        );
-      }
+    if (existingUser.length === 0) {
+      return res.status(400).json({
+        message: "Usuario não encontrado. Verifique os dados e tente novamente.",
+        success: false,
+      });
     }
-  );
+
+    const [result] = await pool.query(
+      "DELETE FROM User WHERE idUser = ?",
+      [idUser]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({
+        message: "Usuario não encontrado. Verifique os dados e tente novamente.",
+        success: false,
+      });
+    }
+
+    return res.status(200).json({
+      message: "Usuário deletado com sucesso",
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Erro ao deletar usuário:", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+    });
+  }
 };
 
 exports.updateUserForgotPassword = async (req, res) => {
@@ -514,20 +403,23 @@ exports.updateUserForgotPassword = async (req, res) => {
       });
     }
 
-    const [user] = await pool.query("SELECT * FROM user Where email = ?", [
-      email,
-    ]);
+    const [user] = await pool.query("SELECT * FROM User WHERE email = ?", [email]);
 
     if (user.length === 0) {
-      return res.status(404).json({ message: "Nenhum usuário encontrado." });
+      return res.status(404).json({ 
+        message: "Nenhum usuário encontrado.",
+        success: false 
+      });
     }
+
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    const [updateForgotPassword] = await pool.query(
-      "UPDATE USER SET password = ? WHERE idUser = ?",
+    
+    const [result] = await pool.query(
+      "UPDATE User SET password = ? WHERE idUser = ?",
       [hashedPassword, user[0].idUser]
     );
 
-    if (updateForgotPassword.length === 0) {
+    if (result.affectedRows === 0) {
       return res.status(400).json({
         success: false,
         message: "Não foi possível atualizar a senha.",
@@ -539,9 +431,9 @@ exports.updateUserForgotPassword = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.error("Erro ao buscar usuário: ", error);
+    console.error("Erro ao atualizar senha:", error);
     return res.status(500).json({
-      message: "Erro interno do servidor ao buscar usuário",
+      message: "Erro interno do servidor ao atualizar senha",
       success: false,
     });
   }

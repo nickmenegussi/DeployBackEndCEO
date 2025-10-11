@@ -1,190 +1,192 @@
 const pool = require("../config/promise")
 
-exports.viewAllFacilitadores = (req, res) => {
-    pool.query('SELETC * FROM Facilitadores', (err, result) => {
-        if(err){
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err
-            })
-        }
+exports.viewAllFacilitadores = async (req, res) => {
+    try {
+        const [result] = await pool.query('SELECT * FROM Facilitadores');
 
         return res.status(200).json({
-            message: 'Successo ao exibir os usuários facilitadores.',
+            message: 'Sucesso ao exibir os usuários facilitadores.',
             success: true,
             data: result
-        })
-    })
+        });
+    } catch (error) {
+        console.error("Erro ao buscar facilitadores:", error);
+        return res.status(500).json({
+            message: "Erro ao se conectar com o servidor.",
+            success: false
+        });
+    }
 }
 
-exports.viewOnlyFacilitadorById = (req, res) => {
-    const User_idUser = req.params.User_idUser
+exports.viewOnlyFacilitadorById = async (req, res) => {
+    const User_idUser = req.params.User_idUser;
 
-    pool.query(`SELECT * 
-        FROM Facilitadores f
-        JOIN User u ON u.idUser = f.User_idUser
-        WHERE f.User_idUser = ?`, [User_idUser], (err, result) => {
-        if(err){
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err
-            })
-        }
+    try {
+        const [result] = await pool.query(
+            `SELECT * 
+             FROM Facilitadores f
+             JOIN User u ON u.idUser = f.User_idUser
+             WHERE f.User_idUser = ?`, 
+            [User_idUser]
+        );
 
-        if(result.length === 0){
+        if (result.length === 0) {
             return res.status(404).json({
                 message: "Facilitador não encontrado.",
                 success: false,
-            })
+            });
         }
 
         return res.status(200).json({
             message: 'Sucesso ao exibir o facilitador desejado.',
             success: true,
             data: result
-        })
-    })
+        });
+    } catch (error) {
+        console.error("Erro ao buscar facilitador:", error);
+        return res.status(500).json({
+            message: "Erro ao se conectar com o servidor.",
+            success: false
+        });
+    }
 }
 
+exports.viewFacilitadoresByGroupoESDE = async (req, res) => {
+    try {
+        const [result] = await pool.query(`SELECT * FROM Facilitadores WHERE category = 'ESDE'`);
 
-exports.viewFacilitadoresByGroupoESDE = (req, res) => {
-    pool.query(`SELECT * FROM Facilitadores where category = 'ESDE'`, (err, result) => {
-        if(err){
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err
-            })
-        }
-
-        if(result.length === 0){
+        if (result.length === 0) {
             return res.status(404).json({
-                message: "Facilitadores não encontrado.",
+                message: "Facilitadores não encontrados.",
                 success: false,
-            })
+            });
         }
 
         return res.status(200).json({
             message: 'Sucesso ao exibir os facilitadores do grupo ESDE.',
             success: true,
             data: result
-        })
-    })
+        });
+    } catch (error) {
+        console.error("Erro ao buscar facilitadores ESDE:", error);
+        return res.status(500).json({
+            message: "Erro ao se conectar com o servidor.",
+            success: false
+        });
+    }
 }
 
-exports.viewFacilitadoresByGroupoCIEDE = (req, res) => {
-    pool.query(`SELECT * FROM Facilitadores where category = 'CIEDE'`, (err, result) => {
-        if(err){
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err
-            })
-        }
+exports.viewFacilitadoresByGroupoCIEDE = async (req, res) => {
+    try {
+        const [result] = await pool.query(`SELECT * FROM Facilitadores WHERE category = 'CIEDE'`);
 
-        if(result.length === 0){
+        if (result.length === 0) {
             return res.status(404).json({
-                message: "Facilitadores não encontrado.",
+                message: "Facilitadores não encontrados.",
                 success: false,
-            })
+            });
         }
 
         return res.status(200).json({
             message: 'Sucesso ao exibir os facilitadores do grupo CIEDE.',
             success: true,
             data: result
-        })
-    })
+        });
+    } catch (error) {
+        console.error("Erro ao buscar facilitadores CIEDE:", error);
+        return res.status(500).json({
+            message: "Erro ao se conectar com o servidor.",
+            success: false
+        });
+    }
 }
 
-exports.viewFacilitadoresByGroupoMEDIUNICO = (req, res) => {
-    pool.query(`SELECT * FROM Facilitadores where category = 'MEDIUNIDADE'`, (err, result) => {
-        if(err){
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err
-            })
-        }
+exports.viewFacilitadoresByGroupoMEDIUNICO = async (req, res) => {
+    try {
+        const [result] = await pool.query(`SELECT * FROM Facilitadores WHERE category = 'MEDIUNIDADE'`);
 
-        if(result.length === 0){
+        if (result.length === 0) {
             return res.status(404).json({
-                message: "Facilitadores não encontrado.",
+                message: "Facilitadores não encontrados.",
                 success: false,
-                data: err
-            })
+            });
         }
 
         return res.status(200).json({
             message: 'Sucesso ao exibir os facilitadores do grupo MEDIUNIDADE.',
             success: true,
             data: result
-        })
-    })
+        });
+    } catch (error) {
+        console.error("Erro ao buscar facilitadores MEDIUNIDADE:", error);
+        return res.status(500).json({
+            message: "Erro ao se conectar com o servidor.",
+            success: false
+        });
+    }
 }
 
-exports.createFacilitadores = (req, res) => {
-    const {User_idUser, description, apelido, espiritaSinceTime, category, memberSinceWhen } = req.body
+exports.createFacilitadores = async (req, res) => {
+    const { User_idUser, description, apelido, espiritaSinceTime, category, memberSinceWhen } = req.body;
 
-    if(!User_idUser || !description || !apelido || !espiritaSinceTime || !category || !memberSinceWhen){
+    if (!User_idUser || !description || !apelido || !espiritaSinceTime || !category || !memberSinceWhen) {
         return res.status(400).json({
             message: "Dados inválidos.",
             success: false
-        })
+        });
     }
 
-    pool.query(`INSERT INTO Facilitadores(User_idUser, description, apelido, espiritaSinceTime, category, memberSinceWhen) VALUES (?, ?, ?, ?, ?, ?)`, [User_idUser, description, apelido, espiritaSinceTime, category, memberSinceWhen], (err, result) => {
-        if(err){
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err
-            })
-        }
+    try {
+        const [result] = await pool.query(
+            `INSERT INTO Facilitadores(User_idUser, description, apelido, espiritaSinceTime, category, memberSinceWhen) VALUES (?, ?, ?, ?, ?, ?)`, 
+            [User_idUser, description, apelido, espiritaSinceTime, category, memberSinceWhen]
+        );
 
         return res.status(201).json({
             message: 'Facilitador criado com sucesso.',
             success: true,
             data: result
-        })
-    })
+        });
+    } catch (error) {
+        console.error("Erro ao criar facilitador:", error);
+        return res.status(500).json({
+            message: "Erro ao se conectar com o servidor.",
+            success: false
+        });
+    }
 }
 
-exports.deleteFacilitadores = (req, res) => {
-    const idFacilitador = req.params.idFacilitador
+exports.deleteFacilitadores = async (req, res) => {
+    const idFacilitador = req.params.idFacilitador;
 
-    pool.query('SELECT * FROM Facilitadores WHERE idFacilitador = ?', [idFacilitador], (err, result) => {
-        if(err){
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err
-            })
-        }
+    try {
+        const [existingFacilitador] = await pool.query(
+            'SELECT * FROM Facilitadores WHERE idFacilitador = ?', 
+            [idFacilitador]
+        );
 
-        if(result.length === 0){
+        if (existingFacilitador.length === 0) {
             return res.status(404).json({
                 message: "Facilitador não encontrado.",
-                success: false,
-                data: err
-            })
+                success: false
+            });
         }
-        pool.query(`DELETE FROM Facilitadores WHERE idFacilitador = ?`, [idFacilitador], (err, result) => {
-            if(err){
-                return res.status(500).json({
-                    message: "Erro ao se conectar com o servidor.",
-                    success: false,
-                    data: err
-                })
-            }
-            
-            return res.status(201).json({
-                message: 'Facilitador deletado com sucesso.',
-                success: true,
-                data: result
-            })
-        })
-    })
+
+        const [result] = await pool.query(
+            `DELETE FROM Facilitadores WHERE idFacilitador = ?`, 
+            [idFacilitador]
+        );
+
+        return res.status(200).json({
+            message: 'Facilitador deletado com sucesso.',
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        console.error("Erro ao deletar facilitador:", error);
+        return res.status(500).json({
+            message: "Erro ao se conectar com o servidor.",
+            success: false
+        });
+    }
 }

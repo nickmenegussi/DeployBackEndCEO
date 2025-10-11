@@ -1,145 +1,116 @@
 const pool = require("../config/promise");
 
-exports.viewEventsByUser = (req, res) => {
+exports.viewEventsByUser = async (req, res) => {
   const User_idUser = req.data.id;
 
-  pool.query(
-    `SELECT * FROM CalendarEvents 
-        WHERE User_idUser = ?
-        ORDER BY createdDate DESC
-        `,
-    [User_idUser],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Erro ao se conectar com o servidor.",
-          success: false,
-          data: err,
-        });
-      }
-      
-      if (result.length === 0) {
-        return res.status(404).json({
-          message: "Nenhum evento encontrado.",
-          success: false,
-          data: result,
-        });
-      }
+  try {
+    const [result] = await pool.query(
+      `SELECT * FROM CalendarEvents 
+       WHERE User_idUser = ?
+       ORDER BY createdDate DESC`,
+      [User_idUser]
+    );
 
-      return res.status(200).json({
-        message: "Eventos encontrados com sucesso.",
-        success: true,
+    if (result.length === 0) {
+      return res.status(404).json({
+        message: "Nenhum evento encontrado.",
+        success: false,
         data: result,
       });
     }
-  );
+
+    return res.status(200).json({
+      message: "Eventos encontrados com sucesso.",
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Erro ao buscar eventos:", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+    });
+  }
 };
 
-exports.viewAllEvents = (req, res) => {
-  pool.query(
-    `SELECT User_idUser, attachment, dateEvent, description, end, idCalendarEvents, link, start, title, status_permission FROM CalendarEvents 
-    INNER JOIN User where status_permission = 'admin' OR status_permission = 'SuperAdmin'
-        ORDER BY start DESC
-        `,
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Erro ao se conectar com o servidor.",
-          success: false,
-          data: err,
-        });
-      }
-      if (result.length === 0) {
-        return res.status(404).json({
-          message: "Eventos não encontrados.",
-          success: false,
-          data: result,
-        });
-      }
+exports.viewAllEvents = async (req, res) => {
+  try {
+    const [result] = await pool.query(
+      `SELECT User_idUser, attachment, dateEvent, description, end, idCalendarEvents, link, start, title, status_permission 
+       FROM CalendarEvents 
+       INNER JOIN User WHERE status_permission = 'admin' OR status_permission = 'SuperAdmin'
+       ORDER BY start DESC`
+    );
 
-      return res.status(200).json({
-        message: "Eventos encontrados com sucesso.",
-        success: true,
+    if (result.length === 0) {
+      return res.status(404).json({
+        message: "Eventos não encontrados.",
+        success: false,
         data: result,
       });
     }
-  );
+
+    return res.status(200).json({
+      message: "Eventos encontrados com sucesso.",
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Erro ao buscar eventos:", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+    });
+  }
 };
 
-exports.createEvent = (req, res) => {
+exports.createEvent = async (req, res) => {
   const attachment = req.file ? req.file.filename : null;
   const { title, description, start, end, link, dateEvent } = req.body;
   const User_idUser = req.data.id;
-  console.log(dateEvent)
-  if (
-    !title ||
-    !description ||
-    !start ||
-    !end ||
-    !link ||
-    !dateEvent ||
-    !attachment
-  ) {
+
+  if (!title || !description || !start || !end || !link || !dateEvent || !attachment) {
     return res.status(400).json({
       message: "Preencha todos os campos.",
       success: false,
     });
   }
 
-  pool.query(
-    `SELECT * FROM CalendarEvents WHERE title = ? AND description = ? AND start = ? AND end = ? AND User_idUser = ? AND link = ? AND dateEvent = ?`,
-    [title, description, start, end, User_idUser, link, dateEvent],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Erro ao se conectar com o servidor.",
-          success: false,
-          data: err,
-        });
-      }
+  try {
+    const [existingEvent] = await pool.query(
+      `SELECT * FROM CalendarEvents WHERE title = ? AND description = ? AND start = ? AND end = ? AND User_idUser = ? AND link = ? AND dateEvent = ?`,
+      [title, description, start, end, User_idUser, link, dateEvent]
+    );
 
-      if (result.length > 0) {
-        return res.status(400).json({
-          message: "Esse evento já foi criado.",
-          success: false,
-          data: result,
-        });
-      }
-
-      pool.query(
-        `INSERT INTO CalendarEvents (title, link, description, start, end, attachment, dateEvent, User_idUser) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          title,
-          link,
-          description,
-          start,
-          end,
-          attachment,
-          User_idUser,
-          dateEvent,
-        ],
-        (err, result) => {
-          if (err) {
-            return res.status(500).json({
-              message: "Erro ao se conectar com o servidor.",
-              success: false,
-              data: err,
-            });
-          }
-
-          return res.status(201).json({
-            message: "Evento criado com sucesso.",
-            success: true,
-            data: result,
-          });
-        }
-      );
+    if (existingEvent.length > 0) {
+      return res.status(400).json({
+        message: "Esse evento já foi criado.",
+        success: false,
+        data: existingEvent,
+      });
     }
-  );
+
+    const [result] = await pool.query(
+      `INSERT INTO CalendarEvents (title, link, description, start, end, attachment, dateEvent, User_idUser) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [title, link, description, start, end, attachment, dateEvent, User_idUser]
+    );
+
+    return res.status(201).json({
+      message: "Evento criado com sucesso.",
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Erro ao criar evento:", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+    });
+  }
 };
 
-exports.updateEventLink = (req, res) => {
+exports.updateEventLink = async (req, res) => {
   const { link } = req.body;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
@@ -151,50 +122,40 @@ exports.updateEventLink = (req, res) => {
     });
   }
 
-  pool.query(
-    "SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
-    [idCalendarEvents, User_idUser],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Erro ao se conectar com o servidor.",
-          success: false,
-          data: err,
-        });
-      }
+  try {
+    const [existingEvent] = await pool.query(
+      "SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
+      [idCalendarEvents, User_idUser]
+    );
 
-      if (result.length === 0) {
-        return res.status(404).json({
-          mesasge: "Link não encontrado",
-          success: false,
-          data: result,
-        });
-      }
-
-      pool.query(
-        "Update CalendarEvents SET link = ? WHERE idCalendarEvents = ? and User_idUser = ?",
-        [link, idCalendarEvents, User_idUser],
-        (err, result) => {
-          if (err) {
-            return res.status(500).json({
-              message: "Erro ao se conectar com o servidor",
-              success: false,
-              data: err,
-            });
-          }
-
-          return res.status(200).json({
-            message: "Link atualizado com sucesso.",
-            success: true,
-            data: result,
-          });
-        }
-      );
+    if (existingEvent.length === 0) {
+      return res.status(404).json({
+        message: "Link não encontrado",
+        success: false,
+        data: existingEvent,
+      });
     }
-  );
+
+    const [result] = await pool.query(
+      "UPDATE CalendarEvents SET link = ? WHERE idCalendarEvents = ? AND User_idUser = ?",
+      [link, idCalendarEvents, User_idUser]
+    );
+
+    return res.status(200).json({
+      message: "Link atualizado com sucesso.",
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Erro ao atualizar link:", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor",
+      success: false,
+    });
+  }
 };
 
-exports.updateEventTitle = (req, res) => {
+exports.updateEventTitle = async (req, res) => {
   const { title } = req.body;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
@@ -206,50 +167,40 @@ exports.updateEventTitle = (req, res) => {
     });
   }
 
-  pool.query(
-    `SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?`,
-    [idCalendarEvents, User_idUser],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Erro ao se conectar com o servidor.",
-          success: false,
-          data: err,
-        });
-      }
+  try {
+    const [existingEvent] = await pool.query(
+      "SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
+      [idCalendarEvents, User_idUser]
+    );
 
-      if (result.length === 0) {
-        return res.status(404).json({
-          message: "Evento não encontrado.",
-          success: false,
-          data: result,
-        });
-      }
-
-      pool.query(
-        `UPDATE CalendarEvents SET title = ? WHERE idCalendarEvents = ? AND User_idUser = ?`,
-        [title, idCalendarEvents, User_idUser],
-        (err, result) => {
-          if (err) {
-            return res.status(500).json({
-              message: "Erro ao se conectar com o servidor.",
-              success: false,
-              data: err,
-            });
-          }
-
-          return res.status(201).json({
-            message: "Título do evento atualizado com sucesso.",
-            success: true,
-            data: result,
-          });
-        }
-      );
+    if (existingEvent.length === 0) {
+      return res.status(404).json({
+        message: "Evento não encontrado.",
+        success: false,
+        data: existingEvent,
+      });
     }
-  );
+
+    const [result] = await pool.query(
+      "UPDATE CalendarEvents SET title = ? WHERE idCalendarEvents = ? AND User_idUser = ?",
+      [title, idCalendarEvents, User_idUser]
+    );
+
+    return res.status(200).json({
+      message: "Título do evento atualizado com sucesso.",
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Erro ao atualizar título:", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+    });
+  }
 };
 
-exports.updateEventdescription = (req, res) => {
+exports.updateEventdescription = async (req, res) => {
   const { description } = req.body;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
@@ -261,50 +212,40 @@ exports.updateEventdescription = (req, res) => {
     });
   }
 
-  pool.query(
-    `SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?`,
-    [idCalendarEvents, User_idUser],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Erro ao se conectar com o servidor.",
-          success: false,
-          data: err,
-        });
-      }
+  try {
+    const [existingEvent] = await pool.query(
+      "SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
+      [idCalendarEvents, User_idUser]
+    );
 
-      if (result.length === 0) {
-        return res.status(404).json({
-          message: "Evento não encontrado.",
-          success: false,
-          data: result,
-        });
-      }
-
-      pool.query(
-        `UPDATE CalendarEvents SET description = ? WHERE idCalendarEvents = ? AND User_idUser = ?`,
-        [description, idCalendarEvents, User_idUser],
-        (err, result) => {
-          if (err) {
-            return res.status(500).json({
-              message: "Erro ao se conectar com o servidor.",
-              success: false,
-              data: err,
-            });
-          }
-
-          return res.status(201).json({
-            message: "Descrição do evento atualizada com sucesso.",
-            success: true,
-            data: result,
-          });
-        }
-      );
+    if (existingEvent.length === 0) {
+      return res.status(404).json({
+        message: "Evento não encontrado.",
+        success: false,
+        data: existingEvent,
+      });
     }
-  );
+
+    const [result] = await pool.query(
+      "UPDATE CalendarEvents SET description = ? WHERE idCalendarEvents = ? AND User_idUser = ?",
+      [description, idCalendarEvents, User_idUser]
+    );
+
+    return res.status(200).json({
+      message: "Descrição do evento atualizada com sucesso.",
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Erro ao atualizar descrição:", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+    });
+  }
 };
 
-exports.updateEventStart = (req, res) => {
+exports.updateEventStart = async (req, res) => {
   const { start } = req.body;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
@@ -316,50 +257,40 @@ exports.updateEventStart = (req, res) => {
     });
   }
 
-  pool.query(
-    `SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?`,
-    [idCalendarEvents, User_idUser],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Erro ao se conectar com o servidor.",
-          success: false,
-          data: err,
-        });
-      }
+  try {
+    const [existingEvent] = await pool.query(
+      "SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
+      [idCalendarEvents, User_idUser]
+    );
 
-      if (result.length === 0) {
-        return res.status(404).json({
-          message: "Evento não encontrado.",
-          success: false,
-          data: result,
-        });
-      }
-
-      pool.query(
-        `UPDATE CalendarEvents SET start = ? WHERE idCalendarEvents = ? AND User_idUser = ?`,
-        [start, idCalendarEvents, User_idUser],
-        (err, result) => {
-          if (err) {
-            return res.status(500).json({
-              message: "Erro ao se conectar com o servidor.",
-              success: false,
-              data: err,
-            });
-          }
-
-          return res.status(201).json({
-            message: "Início do evento atualizado com sucesso.",
-            success: true,
-            data: result,
-          });
-        }
-      );
+    if (existingEvent.length === 0) {
+      return res.status(404).json({
+        message: "Evento não encontrado.",
+        success: false,
+        data: existingEvent,
+      });
     }
-  );
+
+    const [result] = await pool.query(
+      "UPDATE CalendarEvents SET start = ? WHERE idCalendarEvents = ? AND User_idUser = ?",
+      [start, idCalendarEvents, User_idUser]
+    );
+
+    return res.status(200).json({
+      message: "Início do evento atualizado com sucesso.",
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Erro ao atualizar início:", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+    });
+  }
 };
 
-exports.updateEventEnd = (req, res) => {
+exports.updateEventEnd = async (req, res) => {
   const { end } = req.body;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
@@ -371,50 +302,40 @@ exports.updateEventEnd = (req, res) => {
     });
   }
 
-  pool.query(
-    `SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?`,
-    [idCalendarEvents, User_idUser],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Erro ao se conectar com o servidor.",
-          success: false,
-          data: err,
-        });
-      }
+  try {
+    const [existingEvent] = await pool.query(
+      "SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
+      [idCalendarEvents, User_idUser]
+    );
 
-      if (result.length === 0) {
-        return res.status(404).json({
-          message: "Evento não encontrado.",
-          success: false,
-          data: result,
-        });
-      }
-
-      pool.query(
-        `UPDATE CalendarEvents SET end = ? WHERE idCalendarEvents = ? AND User_idUser = ?`,
-        [end, idCalendarEvents, User_idUser],
-        (err, result) => {
-          if (err) {
-            return res.status(500).json({
-              message: "Erro ao se conectar com o servidor.",
-              success: false,
-              data: err,
-            });
-          }
-
-          return res.status(201).json({
-            message: "Fim do evento atualizado com sucesso.",
-            success: true,
-            data: result,
-          });
-        }
-      );
+    if (existingEvent.length === 0) {
+      return res.status(404).json({
+        message: "Evento não encontrado.",
+        success: false,
+        data: existingEvent,
+      });
     }
-  );
+
+    const [result] = await pool.query(
+      "UPDATE CalendarEvents SET end = ? WHERE idCalendarEvents = ? AND User_idUser = ?",
+      [end, idCalendarEvents, User_idUser]
+    );
+
+    return res.status(200).json({
+      message: "Fim do evento atualizado com sucesso.",
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Erro ao atualizar fim:", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+    });
+  }
 };
 
-exports.updateAttachment = (req, res) => {
+exports.updateAttachment = async (req, res) => {
   const attachment = req.file ? req.file.filename : null;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
@@ -426,92 +347,72 @@ exports.updateAttachment = (req, res) => {
     });
   }
 
-  pool.query(
-    `SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?`,
-    [idCalendarEvents, User_idUser],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Erro ao se conectar com o servidor.",
-          success: false,
-          data: err,
-        });
-      }
+  try {
+    const [existingEvent] = await pool.query(
+      "SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
+      [idCalendarEvents, User_idUser]
+    );
 
-      if (result.length === 0) {
-        return res.status(404).json({
-          message: "Evento não encontrado.",
-          success: false,
-          data: result,
-        });
-      }
-
-      pool.query(
-        `UPDATE CalendarEvents SET attachment = ? WHERE idCalendarEvents = ? AND User_idUser = ?`,
-        [attachment, idCalendarEvents, User_idUser],
-        (err, result) => {
-          if (err) {
-            return res.status(500).json({
-              message: "Erro ao se conectar com o servidor.",
-              success: false,
-              data: err,
-            });
-          }
-
-          return res.status(201).json({
-            message: "Anexo do evento atualizado com sucesso.",
-            success: true,
-            data: result,
-          });
-        }
-      );
+    if (existingEvent.length === 0) {
+      return res.status(404).json({
+        message: "Evento não encontrado.",
+        success: false,
+        data: existingEvent,
+      });
     }
-  );
+
+    const [result] = await pool.query(
+      "UPDATE CalendarEvents SET attachment = ? WHERE idCalendarEvents = ? AND User_idUser = ?",
+      [attachment, idCalendarEvents, User_idUser]
+    );
+
+    return res.status(200).json({
+      message: "Anexo do evento atualizado com sucesso.",
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Erro ao atualizar anexo:", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+    });
+  }
 };
 
-exports.deleteEvent = (req, res) => {
+exports.deleteEvent = async (req, res) => {
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
 
-  pool.query(
-    `SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?`,
-    [idCalendarEvents, User_idUser],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Erro ao se conectar com o servidor.",
-          success: false,
-          data: err,
-        });
-      }
+  try {
+    const [existingEvent] = await pool.query(
+      "SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
+      [idCalendarEvents, User_idUser]
+    );
 
-      if (result.length === 0) {
-        return res.status(404).json({
-          message: "Evento não encontrado.",
-          success: false,
-          data: result,
-        });
-      }
-
-      pool.query(
-        `DELETE FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?`,
-        [idCalendarEvents, User_idUser],
-        (err, result) => {
-          if (err) {
-            return res.status(500).json({
-              message: "Erro ao se conectar com o servidor.",
-              success: false,
-              data: err,
-            });
-          }
-
-          return res.status(201).json({
-            message: "Evento deletado com sucesso.",
-            success: true,
-            data: result,
-          });
-        }
-      );
+    if (existingEvent.length === 0) {
+      return res.status(404).json({
+        message: "Evento não encontrado.",
+        success: false,
+        data: existingEvent,
+      });
     }
-  );
+
+    const [result] = await pool.query(
+      "DELETE FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
+      [idCalendarEvents, User_idUser]
+    );
+
+    return res.status(200).json({
+      message: "Evento deletado com sucesso.",
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Erro ao deletar evento:", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+    });
+  }
 };
