@@ -48,6 +48,48 @@ exports.viewOnlyVolunteerWork = async (req, res) => {
     }
 }
 
+exports.updateTimeVolunteerWork = async (req, res) => {
+    const idVolunteerWork = req.params.idVolunteerWork
+    const { timeVolunteerWork } = req.body
+
+    if (!timeVolunteerWork) {
+        return res.status(400).json({
+            success: false,
+            message: "Preencha todos os campos.",
+        })
+    }
+
+    try {
+        const [existingWork] = await pool.query(
+            'SELECT * FROM VolunteerWork WHERE idVolunteerWork = ?',
+            [idVolunteerWork]
+        )
+
+        if (existingWork.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: `O Trabalho voluntário com o id ${idVolunteerWork} não existe no nosso sistema.`,
+            })
+        }
+
+        const [result] = await pool.query(
+            'UPDATE VolunteerWork SET timeVolunteerWork = ? WHERE idVolunteerWork = ?',
+            [timeVolunteerWork, idVolunteerWork]
+        )
+
+        return res.status(200).json({
+            success: true,
+            message: "Horário atualizado com sucesso.",
+        })
+    } catch (error) {
+        console.error("Erro ao atualizar horário:", error)
+        return res.status(500).json({
+            success: false,
+            message: "Erro ao atualizar o horário.",
+        })
+    }
+}
+
 exports.createVolunteerWork = async (req, res) => {
     const { nameVolunteerWork, address, dateVolunteerWork, work_description } = req.body
 
