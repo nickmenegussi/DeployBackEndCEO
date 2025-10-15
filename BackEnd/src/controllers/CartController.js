@@ -1,10 +1,10 @@
-const pool = require("../config/promise");
-
 exports.viewCartAll = async (req, res) => {
+  let connection;
   const idUser = req.data.id;
-  
+
   try {
-    const [result] = await pool.query(
+    connection = await getConnection();
+    const [result] = await connection.execute(
       `SELECT c.*, b.*
        FROM Cart c
        JOIN Book b ON c.Book_idLibrary = b.idLibrary
@@ -23,15 +23,19 @@ exports.viewCartAll = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) await connection.end();
   }
 };
 
 exports.viewCartByUser = async (req, res) => {
+  let connection;
   const idUser = req.params.idUser;
   const idLibrary = req.params.idLibrary;
 
   try {
-    const [result] = await pool.query(
+    connection = await getConnection();
+    const [result] = await connection.execute(
       `SELECT * FROM Cart c, User u, Book b
        WHERE c.User_idUser = u.idUser 
        AND c.Book_idLibrary = b.idLibrary
@@ -57,10 +61,13 @@ exports.viewCartByUser = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) await connection.end();
   }
 };
 
 exports.updateAction = async (req, res) => {
+  let connection;
   const idCart = req.params.id;
   const { action } = req.body;
 
@@ -72,7 +79,9 @@ exports.updateAction = async (req, res) => {
   }
 
   try {
-    const [existingCart] = await pool.query(
+    connection = await getConnection();
+
+    const [existingCart] = await connection.execute(
       "SELECT * FROM Cart WHERE idCart = ?",
       [idCart]
     );
@@ -84,7 +93,7 @@ exports.updateAction = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE Cart SET action = ? WHERE idCart = ?",
       [action, idCart]
     );
@@ -100,10 +109,13 @@ exports.updateAction = async (req, res) => {
       success: false,
       message: "Erro ao atualizar a categoria do item do carrinho",
     });
+  } finally {
+    if (connection) await connection.end();
   }
 };
 
 exports.updateQuantity = async (req, res) => {
+  let connection;
   const User_idUser = req.data.id;
   const { Book_idLibrary, quantity } = req.body;
 
@@ -115,7 +127,9 @@ exports.updateQuantity = async (req, res) => {
   }
 
   try {
-    const [existingItem] = await pool.query(
+    connection = await getConnection();
+
+    const [existingItem] = await connection.execute(
       `SELECT * FROM User u
        INNER JOIN Cart c ON u.idUser = c.User_idUser
        INNER JOIN Book b ON b.idLibrary = c.Book_idLibrary 
@@ -130,7 +144,7 @@ exports.updateQuantity = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE Cart SET quantity = ? WHERE User_idUser = ? AND Book_idLibrary = ?",
       [quantity, User_idUser, Book_idLibrary]
     );
@@ -153,13 +167,16 @@ exports.updateQuantity = async (req, res) => {
       success: false,
       message: "Erro ao atualizar a quantidade do item no carrinho.",
     });
+  } finally {
+    if (connection) await connection.end();
   }
 };
 
 exports.createCart = async (req, res) => {
+  let connection;
   const User_idUser = req.data.id;
   const { Book_idLibrary, action, quantity } = req.body;
-  
+
   if (!User_idUser || !Book_idLibrary || !action || !quantity) {
     return res.status(400).json({
       success: false,
@@ -168,8 +185,10 @@ exports.createCart = async (req, res) => {
   }
 
   try {
+    connection = await getConnection();
+
     // Verifica se o usuário existe
-    const [userResult] = await pool.query(
+    const [userResult] = await connection.execute(
       "SELECT * FROM User WHERE idUser = ?",
       [User_idUser]
     );
@@ -182,7 +201,7 @@ exports.createCart = async (req, res) => {
     }
 
     // Verifica se o livro existe
-    const [bookResult] = await pool.query(
+    const [bookResult] = await connection.execute(
       "SELECT * FROM Book WHERE idLibrary = ?",
       [Book_idLibrary]
     );
@@ -195,7 +214,7 @@ exports.createCart = async (req, res) => {
     }
 
     // Verifica se já existe no carrinho como empréstimo
-    const [existingLoan] = await pool.query(
+    const [existingLoan] = await connection.execute(
       `SELECT * FROM Cart c
        INNER JOIN Loans l ON c.User_idUser = l.User_idUser AND c.Book_idLibrary = l.Book_idLibrary
        WHERE c.User_idUser = ? AND c.Book_idLibrary = ?`,
@@ -210,7 +229,7 @@ exports.createCart = async (req, res) => {
     }
 
     // Insere no carrinho
-    const [insertResult] = await pool.query(
+    const [insertResult] = await connection.execute(
       "INSERT INTO Cart(User_idUser, Book_idLibrary, action, quantity) VALUES(?, ?, ?, ?)",
       [User_idUser, Book_idLibrary, action, quantity]
     );
@@ -226,14 +245,19 @@ exports.createCart = async (req, res) => {
       message: "Erro ao criar carrinho.",
       success: false,
     });
+  } finally {
+    if (connection) await connection.end();
   }
 };
 
 exports.deleteCart = async (req, res) => {
+  let connection;
   const idCart = req.params.idCart;
 
   try {
-    const [existingCart] = await pool.query(
+    connection = await getConnection();
+
+    const [existingCart] = await connection.execute(
       "SELECT idCart FROM Cart WHERE idCart = ?",
       [idCart]
     );
@@ -245,7 +269,7 @@ exports.deleteCart = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "DELETE FROM Cart WHERE idCart = ?",
       [idCart]
     );
@@ -268,5 +292,7 @@ exports.deleteCart = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) await connection.end();
   }
 };

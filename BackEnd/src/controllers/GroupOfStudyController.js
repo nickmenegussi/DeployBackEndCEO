@@ -1,10 +1,11 @@
-const pool = require("../config/promise");
+const getConnection = require("../config/promise");
+
 
 exports.getGroups = async (req, res) => {
+  let connection;
   try {
-    const [rows] = await pool.query(
-      "SELECT * FROM GROUPOFSTUDY ORDER BY CreatedAt DESC"
-    );
+    connection = await getConnection();
+    const [rows] = await connection.execute("SELECT * FROM GROUPOFSTUDY ORDER BY CreatedAt DESC");
 
     return res.status(200).json({
       message: "Sucesso ao exibir categorias de tópicos",
@@ -17,10 +18,13 @@ exports.getGroups = async (req, res) => {
       message: "Erro interno do servidor ao buscar categorias.",
       success: false,
     });
+  } finally {
+    if (connection) connection.end();
   }
 };
 
 exports.getGroupsByType = async (req, res) => {
+  let connection;
   const { TypeGroup } = req.params;
 
   if (!TypeGroup) {
@@ -31,7 +35,8 @@ exports.getGroupsByType = async (req, res) => {
   }
 
   try {
-    const [rows] = await pool.query(
+    connection = await pool.getConnection();
+    const [rows] = await connection.execute(
       `SELECT 
         g.*,
         f.apelido AS FacilitatorName
@@ -61,10 +66,13 @@ exports.getGroupsByType = async (req, res) => {
       message: "Erro interno do servidor ao buscar tópicos por categoria.",
       success: false,
     });
+  } finally {
+    if (connection) connection.end();
   }
 };
 
 exports.createGroup = async (req, res) => {
+  let connection;
   const {
     IdFacilitador,
     NameStudy,
@@ -82,9 +90,10 @@ exports.createGroup = async (req, res) => {
       success: false,
     });
   }
-  
+
   try {
-    const [exists] = await pool.query(
+    connection = await pool.getConnection();
+    const [exists] = await connection.execute(
       `SELECT IdGroupOfStudy 
        FROM GroupOfStudy 
        WHERE NameStudy = ? AND TypeGroup = ? 
@@ -99,7 +108,7 @@ exports.createGroup = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       `INSERT INTO GroupOfStudy
        (IdFacilitador, NameStudy, Description, DayOfWeek, StartTime, EndTime, TypeGroup, Requirements)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -136,5 +145,7 @@ exports.createGroup = async (req, res) => {
       message: "Erro interno do servidor ao criar grupo de estudo.",
       success: false,
     });
+  } finally {
+    if (connection) connection.end();
   }
 };
