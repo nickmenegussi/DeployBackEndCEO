@@ -100,7 +100,7 @@ exports.createGroup = async (req, res) => {
       success: false,
     });
   }
-  
+
   try {
         connection = await getConnection();
 
@@ -119,7 +119,7 @@ exports.createGroup = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       `INSERT INTO GroupOfStudy
        (IdFacilitador, NameStudy, Description, DayOfWeek, StartTime, EndTime, TypeGroup, Requirements)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,

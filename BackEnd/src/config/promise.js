@@ -15,7 +15,6 @@ const dbConfig = {
  */
 
 async function getConnection() {
-  console.log("Banco conectado")
   try {
     const connection = await mysql.createConnection(dbConfig)
     console.log("Nova conexão MySQL estabelecida.")

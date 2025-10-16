@@ -1,7 +1,6 @@
 const getConnection = require("../config/promise");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const nodemailer = require("nodemailer");
 const { Resend } = require("resend");
 const resend = new Resend(process.env.API_KEY_RESEND);
 const OtpGenerator = require("otp-generator");

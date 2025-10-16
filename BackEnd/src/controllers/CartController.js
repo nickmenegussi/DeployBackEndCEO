@@ -1,11 +1,14 @@
 const getConnection = require("../config/promise")
 
 exports.viewCartAll = async (req, res) => {
+  
+
   let connection
   const idUser = req.data.id
 
   try {
-    connection = await getConnection()
+    connection = await getConnection();
+    
 
     const [result] = await connection.execute(
       `SELECT c.*, b.*
@@ -25,8 +28,8 @@ exports.viewCartAll = async (req, res) => {
     return res.status(500).json({
       message: "Erro ao se conectar com o servidor.",
       success: false,
-    })
-  } finally {
+    });
+  }  finally {
     if (connection) {
       await connection.end()
     }
@@ -34,13 +37,14 @@ exports.viewCartAll = async (req, res) => {
 }
 
 exports.viewCartByUser = async (req, res) => {
-  let connection
-
-  const idUser = req.params.idUser
+  let connection;
+  const idUser = req.params.idUser;
   const idLibrary = req.params.idLibrary
 
   try {
-    connection = await getConnection()
+    connection = await getConnection();
+    
+    
 
     const [result] = await connection.execute(
       `SELECT * FROM Cart c, User u, Book b
@@ -67,19 +71,18 @@ exports.viewCartByUser = async (req, res) => {
     return res.status(500).json({
       message: "Erro ao se conectar com o servidor.",
       success: false,
-    })
+    });
   } finally {
-    if (connection) {
-      await connection.end()
-    }
-  }
+    if (connection) await connection.end();
+    
+  } 
 } 
 
 exports.updateAction = async (req, res) => {
-  let connection
+  let connection;
+  const idCart = req.params.id;
+  const { action } = req.body;
 
-  const idCart = req.params.id
-  const { action } = req.body
 
   if (!action || !idCart) {
     return res.status(400).json({
@@ -89,7 +92,9 @@ exports.updateAction = async (req, res) => {
   }
 
   try {
-    connection = await getConnection()
+    connection = await getConnection();
+
+    
 
     const [existingCart] = await connection.execute(
       "SELECT * FROM Cart WHERE idCart = ?",
@@ -103,6 +108,7 @@ exports.updateAction = async (req, res) => {
       })
     }
 
+    
     const [result] = await connection.execute(
       "UPDATE Cart SET action = ? WHERE idCart = ?",
       [action, idCart]
@@ -118,19 +124,19 @@ exports.updateAction = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Erro ao atualizar a categoria do item do carrinho",
-    })
+    });
   } finally {
-    if (connection) {
-      await connection.end()
-    }
-  }
+    if (connection) await connection.end();
+    
+  } 
 }
 
 exports.updateQuantity = async (req, res) => {
-  let connection
+  let connection;
+  const User_idUser = req.data.id;
+  const { Book_idLibrary, quantity } = req.body;
 
-  const User_idUser = req.data.id
-  const { Book_idLibrary, quantity } = req.body
+  
 
   if (!User_idUser || !Book_idLibrary || !quantity) {
     return res.status(400).json({
@@ -140,7 +146,9 @@ exports.updateQuantity = async (req, res) => {
   }
 
   try {
-    connection = await getConnection()
+    connection = await getConnection();
+
+   
 
     const [existingItem] = await connection.execute(
       `SELECT * FROM User u
@@ -179,8 +187,8 @@ exports.updateQuantity = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Erro ao atualizar a quantidade do item no carrinho.",
-    })
-  } finally {
+    });
+  }  finally {
     if (connection) {
       await connection.end()
     }
@@ -188,10 +196,11 @@ exports.updateQuantity = async (req, res) => {
 }
 
 exports.createCart = async (req, res) => {
-  let connection
+  let connection;
+  const User_idUser = req.data.id;
+  const { Book_idLibrary, action, quantity } = req.body;
 
-  const User_idUser = req.data.id
-  const { Book_idLibrary, action, quantity } = req.body
+ 
 
   if (!User_idUser || !Book_idLibrary || !action || !quantity) {
     return res.status(400).json({
@@ -201,9 +210,12 @@ exports.createCart = async (req, res) => {
   }
 
   try {
+    connection = await getConnection();
+
     connection = await getConnection()
 
     // Verifica se o usuário existe
+    
     const [userResult] = await connection.execute(
       "SELECT * FROM User WHERE idUser = ?",
       [User_idUser]
@@ -261,8 +273,8 @@ exports.createCart = async (req, res) => {
     return res.status(500).json({
       message: "Erro ao criar carrinho.",
       success: false,
-    })
-  } finally {
+    });
+  }  finally {
     if (connection) {
       await connection.end()
     }
@@ -270,12 +282,12 @@ exports.createCart = async (req, res) => {
 }
 
 exports.deleteCart = async (req, res) => {
-  let connection
-
-  const idCart = req.params.idCart
+  let connection;
+  const idCart = req.params.idCart;
+  
 
   try {
-    connection = await getConnection()
+    connection = await getConnection();
 
     const [existingCart] = await connection.execute(
       "SELECT idCart FROM Cart WHERE idCart = ?",
@@ -311,7 +323,7 @@ exports.deleteCart = async (req, res) => {
     return res.status(500).json({
       message: "Erro ao se conectar com o servidor.",
       success: false,
-    })
+    });
   } finally {
     if (connection) {
       await connection.end()

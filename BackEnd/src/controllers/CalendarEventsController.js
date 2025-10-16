@@ -1,4 +1,11 @@
 const getConnection = require("../config/promise");
+<<<<<<< HEAD
+=======
+
+// =========================
+// EVENTS
+// =========================
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
 
 exports.viewEventsByUser = async (req, res) => {
   let connection;
@@ -33,9 +40,13 @@ exports.viewEventsByUser = async (req, res) => {
       success: false,
     });
   } finally {
+<<<<<<< HEAD
     if (connection) {
       await connection.end();
     }
+=======
+    if (connection) await connection.end();
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
   }
 };
 
@@ -44,7 +55,10 @@ exports.viewAllEvents = async (req, res) => {
 
   try {
     connection = await getConnection();
+<<<<<<< HEAD
 
+=======
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
     const [result] = await connection.execute(
       `SELECT User_idUser, attachment, dateEvent, description, end, idCalendarEvents, link, start, title, status_permission 
        FROM CalendarEvents 
@@ -72,15 +86,22 @@ exports.viewAllEvents = async (req, res) => {
       success: false,
     });
   } finally {
+<<<<<<< HEAD
     if (connection) {
       await connection.end();
     }
+=======
+    if (connection) await connection.end();
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
   }
 };
 
 exports.createEvent = async (req, res) => {
   let connection;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
   const attachment = req.file ? req.file.filename : null;
   const { title, description, start, end, link, dateEvent } = req.body;
   const User_idUser = req.data.id;
@@ -134,15 +155,22 @@ exports.createEvent = async (req, res) => {
       success: false,
     });
   } finally {
+<<<<<<< HEAD
     if (connection) {
       await connection.end();
     }
+=======
+    if (connection) await connection.end();
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
   }
 };
 
 exports.updateEventLink = async (req, res) => {
   let connection;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
   const { link } = req.body;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
@@ -187,15 +215,22 @@ exports.updateEventLink = async (req, res) => {
       success: false,
     });
   } finally {
+<<<<<<< HEAD
     if (connection) {
       await connection.end();
     }
+=======
+    if (connection) await connection.end();
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
   }
 };
 
 exports.updateEventTitle = async (req, res) => {
   let connection;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
   const { title } = req.body;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
@@ -239,12 +274,17 @@ exports.updateEventTitle = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) await connection.end();
   }
 };
 
 exports.updateEventdescription = async (req, res) => {
   let connection;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
   const { description } = req.body;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
@@ -289,15 +329,22 @@ exports.updateEventdescription = async (req, res) => {
       success: false,
     });
   } finally {
+<<<<<<< HEAD
     if (connection) {
       await connection.end();
     }
+=======
+    if (connection) await connection.end();
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
   }
 };
 
 exports.updateEventStart = async (req, res) => {
   let connection;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
   const { start } = req.body;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
@@ -342,15 +389,22 @@ exports.updateEventStart = async (req, res) => {
       success: false,
     });
   } finally {
+<<<<<<< HEAD
     if (connection) {
       await connection.end();
     }
+=======
+    if (connection) await connection.end();
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
   }
 };
 
 exports.updateEventEnd = async (req, res) => {
   let connection;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
   const { end } = req.body;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
@@ -395,15 +449,23 @@ exports.updateEventEnd = async (req, res) => {
       success: false,
     });
   } finally {
+<<<<<<< HEAD
     if (connection) {
       await connection.end();
     }
+=======
+    if (connection) await connection.end();
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
   }
 };
 
 exports.updateAttachment = async (req, res) => {
+<<<<<<< HEAD
     let connection;
 
+=======
+  let connection;
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
   const attachment = req.file ? req.file.filename : null;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
@@ -448,9 +510,13 @@ exports.updateAttachment = async (req, res) => {
       success: false,
     });
   } finally {
+<<<<<<< HEAD
     if (connection) {
       await connection.end();
     }
+=======
+    if (connection) await connection.end();
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
   }
 };
 
@@ -461,6 +527,10 @@ exports.deleteEvent = async (req, res) => {
 
   try {
     connection = await getConnection();
+<<<<<<< HEAD
+=======
+
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
     const [existingEvent] = await connection.execute(
       "SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
       [idCalendarEvents, User_idUser]
@@ -491,8 +561,12 @@ exports.deleteEvent = async (req, res) => {
       success: false,
     });
   } finally {
+<<<<<<< HEAD
     if (connection) {
       await connection.end();
     }
+=======
+    if (connection) await connection.end();
+>>>>>>> 76e7996f6e64171b329bcd6edd870df3b3344d32
   }
 };
