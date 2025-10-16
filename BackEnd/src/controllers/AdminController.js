@@ -1,124 +1,139 @@
-const pool = require('../config/promise')
+const getConnection = require("../config/promise");
 
-exports.ViewAllAdmins = (req,res) => {
-    pool.query(`SELECT * FROM User WHERE status_permission = 'Admin'`, (err, result) => {
-        if(err){
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err
-            })
-        }
+exports.ViewAllAdmins = async (req, res) => {
+  let connection;
 
-        if(result.length === 0){
-            return res.status(404).json({
-                message: `Não foi possível encontrar um usuário com a permissão 'Admin'`,
-                success: false,
-                data: err
-            })
-        }
+  try {
+    connection = await getConnection();
+    const [result] = await connection.execute(
+      `SELECT * FROM User WHERE status_permission = 'Admin'`
+    );
 
-        return res.status(200).json({
-            message: 'Sucesso ao exibir os Admins.',
-            success: true,
-            data: result
-        })
-    })
-}
-
-exports.ViewOnlyAdminByUser = (req,res) => {
-    const userData = req.data   
-    const idUser = req.params.idUser
-
-    if(userData.role !== 'Admin' && userData.role !== 'SuperAdmin'){
-        return res.status(403).json({
-            message: "Você não tem permissão para visualizar um usuário.",
-            success: false
-        })
+    if (result.length === 0) {
+      return res.status(404).json({
+        message: `Não foi possível encontrar um usuário com a permissão 'Admin'`,
+        success: false,
+      });
     }
 
-    pool.query(`SELECT * FROM User WHERE idUser = ? and status_permission = 'Admin'`, [idUser] ,(err, result) => {
-        if(err){
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err
-            })
-        }
+    return res.status(200).json({
+      message: "Sucesso ao exibir os Admins.",
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Erro ao buscar admins:", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+      data: error
+    });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
+  }
+};
 
-        if(result.length === 0){
-            return res.status(404).json({
-                message: `Não foi possível encontrar o usuario desejado.`,
-                success: false,
-                data: err
-            })
-        }
+exports.ViewOnlyAdminByUser = async (req, res) => {
+  let connection;
+  const userData = req.data;
+  const idUser = req.params.idUser;
 
-        return res.status(200).json({
-            message: 'Sucesso ao exibir o usuario desejado.',
-            success: true,
-            data: result
-        })
-    })
-}
+  try {
+    connection = await getConnection();
+    const [result] = connection.execute(
+      `SELECT * FROM User WHERE idUser = ? and status_permission = 'Admin'`,
+      [idUser]
+    );
 
-exports.updateUserPermission = (req,res) => {
-    const userData = req.data
-    const idUser = req.params.idUser
-    const {status_permission} = req.body  
+    if (userData.role !== "Admin" && userData.role !== "SuperAdmin") {
+      return res.status(403).json({
+        message: "Você não tem permissão para visualizar um usuário.",
+        success: false,
+      });
+    }
 
-    
-    if(userData.role !== 'SuperAdmin'){
-        return res.status(403).json({
-            message: "Você não tem permissão para alterar a permissão de um usuário.",
-            success: false
-        })
-    } 
+    if (result.length === 0) {
+      return res.status(404).json({
+        message: `Não foi possível encontrar o usuario desejado.`,
+        success: false,
+      });
+    }
 
-    
-    pool.query(`SELECT * FROM User WHERE idUser = ? and (status_permission = 'User' or status_permission = 'Admin')`, [idUser] ,(err, result) => {
-        if(err){
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err
-            })
-        }
+    return res.status(200).json({
+      message: "Sucesso ao exibir o usuario desejado.",
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Erro ao buscar somente o usuário admin", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+      data: error
+    });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
+  }
+};
 
-        if(result.length === 0){
-            return res.status(404).json({
-                message: `Usuário não encontrado ou já possui permissão elevada.`,
-                success: false,
-            })
-        }   
-         
-            pool.query(`UPDATE User SET status_permission = ? WHERE idUser = ? `, [status_permission ,idUser] , (err, result) => {
-                if (err) {
-                    return res.status(500).json({
-                        success: false,
-                        message: "Erro ao atualizar o status do user.",
-                        data: err,
-                    })
-                }
+exports.updateUserPermission = async (req, res) => {
+  let connection;
+  const userData = req.data;
+  const idUser = req.params.idUser;
+  const { status_permission } = req.body;
 
-                
-                    return res.status(200).json({
-                        message: 'Sucesso ao mudar a permissão do usuário.',
-                        success: true,
-                        data: result
-                    })
-                
+  try {
+    connection = await getConnection();
+    const [resultResearch] = connection.execute(
+      `SELECT * FROM User WHERE idUser = ? and (status_permission = 'User' or status_permission = 'Admin')`,
+      [idUser]
+    );
+    if (userData.role !== "SuperAdmin") {
+      return res.status(403).json({
+        message:
+          "Você não tem permissão para alterar a permissão de um usuário.",
+        success: false,
+      });
+    }
 
-               
-            })
-        
-    })
-}
+    if (resultResearch.length === 0) {
+      return res.status(404).json({
+        message: `Usuário não encontrado ou já possui permissão elevada.`,
+        success: false,
+      });
+    }
+
+    const [ResultUpdatePermission] = connection.execute(
+      `UPDATE User SET status_permission = ? WHERE idUser = ? `,
+      [status_permission, idUser]
+    );
+
+    if (ResultUpdatePermission.length > 0) {
+      return res.status(200).json({
+        message: "Sucesso ao mudar a permissão do usuário.",
+        success: true,
+        data: resultResearch,
+      });
+    }
+  } catch (error) {
+    console.error("Erro ao mudar a permissão do usuário", error)
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+      data: error,
+    });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
+  }
+};
 
 exports.DeleteUserAdmin = (req, res) => {
-    const idUser = req.params.idUser
-    const role = req.data.role
-
-
-
-}
+  const idUser = req.params.idUser;
+  const role = req.data.role;
+};

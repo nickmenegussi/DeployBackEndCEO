@@ -1,14 +1,17 @@
-const pool = require("../config/promise");
+const getConnection = require("../config/promise");
 // const { getIO } = require("../socket/index");
 
 exports.viewOnlyTopicById = async (req, res) => {
+  let connection;
+
   const idTopic = req.params.topicId;
 
   try {
-    const [result] = await pool.query(
-      "SELECT * FROM Topic WHERE idTopic = ?",
-      [idTopic]
-    );
+    connection = await getConnection();
+
+    const [result] = await connection.execute("SELECT * FROM Topic WHERE idTopic = ?", [
+      idTopic,
+    ]);
 
     if (result.length === 0) {
       return res.status(404).json({
@@ -37,12 +40,22 @@ exports.viewOnlyTopicById = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.viewAllTopic = async (req, res) => {
+  let connection;
+
   try {
-    const [result] = await pool.query("SELECT * FROM Topic ORDER BY created_at DESC");
+    connection = await getConnection();
+
+    const [result] = await connection.execute(
+      "SELECT * FROM Topic ORDER BY created_at DESC"
+    );
 
     return res.status(200).json({
       message: "Sucesso ao exibir todos os tópicos das postagens.",
@@ -55,10 +68,16 @@ exports.viewAllTopic = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.createTopic = async (req, res) => {
+  let connection;
+
   const { title, description, Category_id } = req.body;
   const User_idUser = req.data.id;
   const image = req.file ? req.file.filename : null;
@@ -71,19 +90,22 @@ exports.createTopic = async (req, res) => {
   }
 
   try {
-    const [existingTopic] = await pool.query(
+    connection = await getConnection();
+
+    const [existingTopic] = await connection.execute(
       "SELECT * FROM Topic WHERE title = ? AND description = ?",
       [title, description]
     );
 
     if (existingTopic.length > 0) {
       return res.status(409).json({
-        message: "Já existe um tópico com o mesmo título e descrição. Por favor, tente novamente.",
+        message:
+          "Já existe um tópico com o mesmo título e descrição. Por favor, tente novamente.",
         success: false,
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "INSERT INTO Topic(title, description, image, User_idUser, Category_id) VALUES(?, ?, ?, ?, ?)",
       [title, description, image, User_idUser, Category_id]
     );
@@ -109,10 +131,16 @@ exports.createTopic = async (req, res) => {
       message: "Erro ao criar um novo tópico",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateTitle = async (req, res) => {
+  let connection;
+
   const idTopic = req.params.topicId;
   const { title } = req.body;
   const User_idUser = req.data.id;
@@ -125,7 +153,9 @@ exports.updateTitle = async (req, res) => {
   }
 
   try {
-    const [existingTopic] = await pool.query(
+    connection = await getConnection();
+
+    const [existingTopic] = await connection.execute(
       "SELECT * FROM Topic WHERE idTopic = ? AND User_idUser = ?",
       [idTopic, User_idUser]
     );
@@ -144,7 +174,7 @@ exports.updateTitle = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       `UPDATE Topic SET title = ? WHERE idTopic = ? AND User_idUser = ?`,
       [title, idTopic, User_idUser]
     );
@@ -160,10 +190,16 @@ exports.updateTitle = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateDescription = async (req, res) => {
+  let connection;
+
   const idTopic = req.params.topicId;
   const { description } = req.body;
   const User_idUser = req.data.id;
@@ -176,7 +212,9 @@ exports.updateDescription = async (req, res) => {
   }
 
   try {
-    const [existingTopic] = await pool.query(
+    connection = await getConnection();
+
+    const [existingTopic] = await connection.execute(
       "SELECT * FROM Topic WHERE idTopic = ? AND User_idUser = ?",
       [idTopic, User_idUser]
     );
@@ -195,7 +233,7 @@ exports.updateDescription = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       `UPDATE Topic SET description = ? WHERE idTopic = ? AND User_idUser = ?`,
       [description, idTopic, User_idUser]
     );
@@ -211,10 +249,16 @@ exports.updateDescription = async (req, res) => {
       success: false,
       message: "Erro ao se conectar com o servidor.",
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateTopicImage = async (req, res) => {
+  let connection;
+
   const image = req.file ? req.file.filename : null;
   const idTopic = req.params.topicId;
   const User_idUser = req.data.id;
@@ -227,7 +271,9 @@ exports.updateTopicImage = async (req, res) => {
   }
 
   try {
-    const [existingTopic] = await pool.query(
+    connection = await getConnection();
+
+    const [existingTopic] = await connection.execute(
       "SELECT * FROM Topic WHERE idTopic = ? AND User_idUser = ?",
       [idTopic, User_idUser]
     );
@@ -246,7 +292,7 @@ exports.updateTopicImage = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       `UPDATE Topic SET image = ? WHERE idTopic = ? AND User_idUser = ?`,
       [image, idTopic, User_idUser]
     );
@@ -262,10 +308,16 @@ exports.updateTopicImage = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.deleteTopic = async (req, res) => {
+  let connection;
+
   const idTopic = req.params.topicId;
   const User_idUser = req.data.id;
 
@@ -277,7 +329,9 @@ exports.deleteTopic = async (req, res) => {
   }
 
   try {
-    const [existingTopic] = await pool.query(
+    connection = await getConnection();
+
+    const [existingTopic] = await connection.execute(
       "SELECT * FROM Topic WHERE idTopic = ? AND User_idUser = ?",
       [idTopic, User_idUser]
     );
@@ -296,7 +350,7 @@ exports.deleteTopic = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       `DELETE FROM Topic WHERE idTopic = ? AND User_idUser = ?`,
       [idTopic, User_idUser]
     );
@@ -315,5 +369,9 @@ exports.deleteTopic = async (req, res) => {
       message: "Erro ao deletar tópico.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };

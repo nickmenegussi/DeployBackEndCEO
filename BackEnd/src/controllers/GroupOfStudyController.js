@@ -1,7 +1,11 @@
-const pool = require("../config/promise");
+const getConnection = require("../config/promise");
 
 exports.getGroups = async (req, res) => {
+    let connection;
+
   try {
+        connection = await getConnection();
+
     const [rows] = await pool.query(
       "SELECT * FROM GROUPOFSTUDY ORDER BY CreatedAt DESC"
     );
@@ -17,10 +21,16 @@ exports.getGroups = async (req, res) => {
       message: "Erro interno do servidor ao buscar categorias.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.getGroupsByType = async (req, res) => {
+    let connection;
+
   const { TypeGroup } = req.params;
 
   if (!TypeGroup) {
@@ -31,6 +41,8 @@ exports.getGroupsByType = async (req, res) => {
   }
 
   try {
+        connection = await getConnection();
+
     const [rows] = await pool.query(
       `SELECT 
         g.*,
@@ -61,10 +73,16 @@ exports.getGroupsByType = async (req, res) => {
       message: "Erro interno do servidor ao buscar tópicos por categoria.",
       success: false,
     });
+  }finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.createGroup = async (req, res) => {
+    let connection;
+
   const {
     IdFacilitador,
     NameStudy,
@@ -84,6 +102,8 @@ exports.createGroup = async (req, res) => {
   }
   
   try {
+        connection = await getConnection();
+
     const [exists] = await pool.query(
       `SELECT IdGroupOfStudy 
        FROM GroupOfStudy 
@@ -136,5 +156,9 @@ exports.createGroup = async (req, res) => {
       message: "Erro interno do servidor ao criar grupo de estudo.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };

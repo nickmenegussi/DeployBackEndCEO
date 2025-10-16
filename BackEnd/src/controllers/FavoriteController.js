@@ -1,10 +1,13 @@
-const pool = require("../config/promise");
+const getConnection = require("../config/promise");
 
 exports.viewAllFavoritesByUser = async (req, res) => {
+  let connection 
   const User_idUser = req.data.id;
 
   try {
-    const [result] = await pool.query(
+        connection = await getConnection();
+
+    const [result] = await connection.execute(
       `SELECT idFavorite, User_idUser, Book_idLibrary, nameBook, authorBook, image, tagsBook, bookCategory, f.date_at_create
        FROM Favorite f, Book b, User u
        WHERE b.idLibrary = f.Book_idLibrary
@@ -31,10 +34,16 @@ exports.viewAllFavoritesByUser = async (req, res) => {
       success: false,
       message: "Erro ao se conectar com o backend",
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.createFavoriteBook = async (req, res) => {
+    let connection;
+
   const User_idUser = req.data.id;
   const { Book_idLibrary } = req.body;
 
@@ -46,7 +55,9 @@ exports.createFavoriteBook = async (req, res) => {
   }
 
   try {
-    const [existingFavorite] = await pool.query(
+        connection = await getConnection();
+
+    const [existingFavorite] = await connection.execute(
       "SELECT * FROM Favorite WHERE User_idUser = ? AND Book_idLibrary = ?",
       [User_idUser, Book_idLibrary]
     );
@@ -58,7 +69,7 @@ exports.createFavoriteBook = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "INSERT INTO Favorite(User_idUser, Book_idLibrary) VALUES(?, ?)",
       [User_idUser, Book_idLibrary]
     );
@@ -74,5 +85,9 @@ exports.createFavoriteBook = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };

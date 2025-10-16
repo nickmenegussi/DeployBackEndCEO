@@ -1,8 +1,10 @@
-const pool = require("../config/promise");
+const getConnection = require("../config/promise");
 
 exports.viewAllLectures = async (req, res) => {
+  let connection;
+
   try {
-    const [result] = await pool.query(`SELECT * FROM Lecture`);
+    const [result] = await connection.execute(`SELECT * FROM Lecture`);
 
     if (result.length === 0) {
       return res.status(404).json({
@@ -23,14 +25,22 @@ exports.viewAllLectures = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.viewLecturesById = async (req, res) => {
+  let connection;
+
   const { idLecture } = req.params;
 
   try {
-    const [result] = await pool.query(
+    connection = await getConnection();
+
+    const [result] = await connection.execute(
       `SELECT * FROM Lecture WHERE idLecture = ?`,
       [idLecture]
     );
@@ -54,10 +64,16 @@ exports.viewLecturesById = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.createLecture = async (req, res) => {
+  let connection;
+
   const {
     nameLecture,
     description,
@@ -67,7 +83,14 @@ exports.createLecture = async (req, res) => {
     video_url,
   } = req.body;
 
-  if (!nameLecture || !description || !dateLecture || !link_url || !timeLecture || !video_url) {
+  if (
+    !nameLecture ||
+    !description ||
+    !dateLecture ||
+    !link_url ||
+    !timeLecture ||
+    !video_url
+  ) {
     return res.status(400).json({
       message: "Preencha todos os campos de cadastro.",
       success: false,
@@ -75,7 +98,9 @@ exports.createLecture = async (req, res) => {
   }
 
   try {
-    const [existingLecture] = await pool.query(
+    connection = await getConnection();
+
+    const [existingLecture] = await connection.execute(
       "SELECT * FROM Lecture WHERE nameLecture = ? AND description = ? AND dateLecture = ? AND link_url = ? AND timeLecture = ? AND video_url = ?",
       [nameLecture, description, dateLecture, link_url, timeLecture, video_url]
     );
@@ -88,7 +113,7 @@ exports.createLecture = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       `INSERT INTO Lecture (nameLecture, dateLecture, timeLecture, description, link_url, video_url) VALUES (?, ?, ?, ?, ?, ?)`,
       [nameLecture, dateLecture, timeLecture, description, link_url, video_url]
     );
@@ -104,15 +129,23 @@ exports.createLecture = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateLectureName = async (req, res) => {
+  let connection;
+
   const { idLecture } = req.params;
   const { nameLecture } = req.body;
 
   try {
-    const [existingLecture] = await pool.query(
+    connection = await getConnection();
+
+    const [existingLecture] = await connection.execute(
       `SELECT * FROM Lecture WHERE idLecture = ?`,
       [idLecture]
     );
@@ -124,7 +157,7 @@ exports.updateLectureName = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       `UPDATE Lecture SET nameLecture = ? WHERE idLecture = ?`,
       [nameLecture, idLecture]
     );
@@ -147,15 +180,23 @@ exports.updateLectureName = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateLectureDate = async (req, res) => {
+  let connection;
+
   const { idLecture } = req.params;
   const { dateLecture } = req.body;
 
   try {
-    const [existingLecture] = await pool.query(
+        connection = await getConnection();
+
+    const [existingLecture] = await connection.execute(
       `SELECT * FROM Lecture WHERE idLecture = ?`,
       [idLecture]
     );
@@ -167,7 +208,7 @@ exports.updateLectureDate = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       `UPDATE Lecture SET dateLecture = ? WHERE idLecture = ?`,
       [dateLecture, idLecture]
     );
@@ -190,15 +231,23 @@ exports.updateLectureDate = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateLectureTime = async (req, res) => {
+  let connection;
+
   const { idLecture } = req.params;
   const { timeLecture } = req.body;
 
   try {
-    const [existingLecture] = await pool.query(
+        connection = await getConnection();
+
+    const [existingLecture] = await connection.execute(
       `SELECT * FROM Lecture WHERE idLecture = ?`,
       [idLecture]
     );
@@ -210,7 +259,7 @@ exports.updateLectureTime = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       `UPDATE Lecture SET timeLecture = ? WHERE idLecture = ?`,
       [timeLecture, idLecture]
     );
@@ -233,15 +282,23 @@ exports.updateLectureTime = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateLectureDescription = async (req, res) => {
+  let connection;
+
   const { idLecture } = req.params;
   const { description } = req.body;
 
   try {
-    const [existingLecture] = await pool.query(
+        connection = await getConnection();
+
+    const [existingLecture] = await connection.execute(
       `SELECT * FROM Lecture WHERE idLecture = ?`,
       [idLecture]
     );
@@ -253,7 +310,7 @@ exports.updateLectureDescription = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       `UPDATE Lecture SET description = ? WHERE idLecture = ?`,
       [description, idLecture]
     );
@@ -276,15 +333,23 @@ exports.updateLectureDescription = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateLecturelink_url = async (req, res) => {
+  let connection;
+
   const { idLecture } = req.params;
   const { link_url } = req.body;
 
   try {
-    const [existingLecture] = await pool.query(
+        connection = await getConnection();
+
+    const [existingLecture] = await connection.execute(
       `SELECT * FROM Lecture WHERE idLecture = ?`,
       [idLecture]
     );
@@ -296,7 +361,7 @@ exports.updateLecturelink_url = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       `UPDATE Lecture SET link_url = ? WHERE idLecture = ?`,
       [link_url, idLecture]
     );
@@ -319,15 +384,23 @@ exports.updateLecturelink_url = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateLectureVideoUrl = async (req, res) => {
+  let connection;
+
   const { idLecture } = req.params;
   const { video_url } = req.body;
 
   try {
-    const [existingLecture] = await pool.query(
+        connection = await getConnection();
+
+    const [existingLecture] = await connection.execute(
       `SELECT * FROM Lecture WHERE idLecture = ?`,
       [idLecture]
     );
@@ -339,7 +412,7 @@ exports.updateLectureVideoUrl = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       `UPDATE Lecture SET video_url = ? WHERE idLecture = ?`,
       [video_url, idLecture]
     );
@@ -362,14 +435,22 @@ exports.updateLectureVideoUrl = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.deleteLecture = async (req, res) => {
+  let connection;
+
   const { idLecture } = req.params;
 
   try {
-    const [existingLecture] = await pool.query(
+        connection = await getConnection();
+
+    const [existingLecture] = await connection.execute(
       `SELECT * FROM Lecture WHERE idLecture = ?`,
       [idLecture]
     );
@@ -381,7 +462,7 @@ exports.deleteLecture = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       `DELETE FROM Lecture WHERE idLecture = ?`,
       [idLecture]
     );
@@ -404,5 +485,9 @@ exports.deleteLecture = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };

@@ -1,13 +1,19 @@
-const pool = require("../config/promise");
+const getConnection = require("../config/promise");
 const bcrypt = require("bcrypt");
-const cloudinary = require('../config/cloudinary')
+const cloudinary = require("../config/cloudinary");
 
 exports.viewOnlyUser = async (req, res) => {
+  let connection;
+
   const dataUser = req.data.id;
   const roleUser = req.data.role;
   const idUser = req.params.idUser;
 
-  if (roleUser !== "Admin" && roleUser !== "SuperAdmin" && dataUser !== idUser) {
+  if (
+    roleUser !== "Admin" &&
+    roleUser !== "SuperAdmin" &&
+    dataUser !== idUser
+  ) {
     return res.status(403).json({
       message: "Você não tem permissão para acessar este usuário.",
       success: false,
@@ -15,7 +21,9 @@ exports.viewOnlyUser = async (req, res) => {
   }
 
   try {
-    const [result] = await pool.query(
+    connection = await getConnection();
+
+    const [result] = await connection.execute(
       "SELECT * FROM User WHERE idUser = ?",
       [idUser]
     );
@@ -38,12 +46,20 @@ exports.viewOnlyUser = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.viewAllUser = async (req, res) => {
+  let connection;
+
   try {
-    const [result] = await pool.query(`SELECT * FROM User`);
+    connection = await getConnection();
+
+    const [result] = await connection.execute(`SELECT * FROM User`);
 
     return res.status(200).json({
       message: "Sucesso ao exibir os usuarios.",
@@ -56,10 +72,16 @@ exports.viewAllUser = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.register = async (req, res) => {
+  let connection;
+
   const image_profile = null;
   const { nameUser, email, password } = req.body;
 
@@ -71,9 +93,11 @@ exports.register = async (req, res) => {
   }
 
   try {
+    connection = await getConnection();
+
     const hash_password = await bcrypt.hash(password, 10);
 
-    const [existingUser] = await pool.query(
+    const [existingUser] = await connection.execute(
       "SELECT * FROM User WHERE nameUser = ? AND email = ?",
       [nameUser, email]
     );
@@ -85,7 +109,7 @@ exports.register = async (req, res) => {
       });
     }
 
-    const [existingEmail] = await pool.query(
+    const [existingEmail] = await connection.execute(
       "SELECT idUser FROM User WHERE email = ?",
       [email]
     );
@@ -93,11 +117,11 @@ exports.register = async (req, res) => {
     if (existingEmail.length > 0) {
       return res.status(409).json({
         message: "Esse email já foi cadastrado, tente fazer login.",
-        success: false
+        success: false,
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "INSERT INTO User(nameUser, email, password, image_profile, status_permission) VALUES(?, ?, ?, ?, ?)",
       [nameUser, email, hash_password, image_profile, "User"]
     );
@@ -113,10 +137,16 @@ exports.register = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateUser = async (req, res) => {
+  let connection;
+
   const idUser = req.data.id;
   const { email } = req.body;
 
@@ -128,19 +158,22 @@ exports.updateUser = async (req, res) => {
   }
 
   try {
-    const [existingUser] = await pool.query(
+    connection = await getConnection();
+
+    const [existingUser] = await connection.execute(
       "SELECT * FROM User WHERE idUser = ?",
       [idUser]
     );
 
     if (existingUser.length === 0) {
       return res.status(404).json({
-        message: "Usuario não encontrado. Verifique os dados e tente novamente.",
+        message:
+          "Usuario não encontrado. Verifique os dados e tente novamente.",
         success: false,
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE User SET email = ? WHERE idUser = ?",
       [email, idUser]
     );
@@ -156,10 +189,16 @@ exports.updateUser = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateUserName = async (req, res) => {
+  let connection;
+
   const idUser = req.data.id;
   const { nameUser } = req.body;
 
@@ -171,7 +210,9 @@ exports.updateUserName = async (req, res) => {
   }
 
   try {
-    const [existingUser] = await pool.query(
+    connection = await getConnection();
+
+    const [existingUser] = await connection.execute(
       "SELECT * FROM User WHERE idUser = ?",
       [idUser]
     );
@@ -183,7 +224,7 @@ exports.updateUserName = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE User SET nameUser = ? WHERE idUser = ?",
       [nameUser, idUser]
     );
@@ -206,10 +247,16 @@ exports.updateUserName = async (req, res) => {
       success: false,
       message: "Erro ao se conectar com o servidor.",
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateUserPassword = async (req, res) => {
+  let connection;
+
   const idUser = req.data.id;
   const { newPassword, currentPassword, confirmedPassword } = req.body;
 
@@ -221,14 +268,17 @@ exports.updateUserPassword = async (req, res) => {
   }
 
   try {
-    const [existingUser] = await pool.query(
+    connection = await getConnection();
+
+    const [existingUser] = await connection.execute(
       "SELECT * FROM User WHERE idUser = ?",
       [idUser]
     );
 
     if (existingUser.length === 0) {
       return res.status(404).json({
-        message: "Usuario não encontrado. Verifique os dados e tente novamente.",
+        message:
+          "Usuario não encontrado. Verifique os dados e tente novamente.",
         success: false,
       });
     }
@@ -245,14 +295,15 @@ exports.updateUserPassword = async (req, res) => {
 
     if (newPassword !== confirmedPassword) {
       return res.status(400).json({
-        message: "A nova senha digitada não coincide com a confirmada. Por favor, digite novamente.",
+        message:
+          "A nova senha digitada não coincide com a confirmada. Por favor, digite novamente.",
         success: false,
       });
     }
 
     const hashPassword = await bcrypt.hash(newPassword, 15);
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE User SET password = ? WHERE idUser = ?",
       [hashPassword, idUser]
     );
@@ -274,10 +325,16 @@ exports.updateUserPassword = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateUserImageProfile = async (req, res) => {
+  let connection;
+
   const image_profile = req.file;
   const idUser = req.data.id;
 
@@ -289,21 +346,26 @@ exports.updateUserImageProfile = async (req, res) => {
   }
 
   try {
+    connection = await getConnection();
+
     const resultUploadImage = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream({
-        folder: "profile_pictures",
-        resource_type: "image"
-      }, (error, result) => {
-        if(error) reject(error)
-        else resolve(result)
-      })
-      stream.end(image_profile.buffer)
-    })
-    const imageUrl = resultUploadImage.secure_url
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: "profile_pictures",
+          resource_type: "image",
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      stream.end(image_profile.buffer);
+    });
+    const imageUrl = resultUploadImage.secure_url;
 
     // const imageUrl = `/uploads/${image_profile.filename}`; // Usando caminho local
 
-    const [existingUser] = await pool.query(
+    const [existingUser] = await connection.execute(
       "SELECT * FROM User WHERE idUser = ?",
       [idUser]
     );
@@ -315,7 +377,7 @@ exports.updateUserImageProfile = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE User SET image_profile = ? WHERE idUser = ?",
       [imageUrl, idUser]
     );
@@ -331,10 +393,16 @@ exports.updateUserImageProfile = async (req, res) => {
       success: false,
       message: "Erro ao atualizar imagem de perfil.",
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.deleteAccountUser = async (req, res) => {
+  let connection;
+
   const idUser = req.params.idUser;
   const roleUser = req.data.role;
   const dataUser = req.data.id;
@@ -346,7 +414,11 @@ exports.deleteAccountUser = async (req, res) => {
     });
   }
 
-  if (roleUser !== "Admin" && roleUser !== "SuperAdmin" && dataUser !== idUser) {
+  if (
+    roleUser !== "Admin" &&
+    roleUser !== "SuperAdmin" &&
+    dataUser !== idUser
+  ) {
     return res.status(403).json({
       message: "Você não tem permissão para deletar este usuário.",
       success: false,
@@ -354,26 +426,30 @@ exports.deleteAccountUser = async (req, res) => {
   }
 
   try {
-    const [existingUser] = await pool.query(
+    connection = await getConnection();
+
+    const [existingUser] = await connection.execute(
       `SELECT * FROM User WHERE idUser = ? AND status_permission = 'User'`,
       [idUser]
     );
 
     if (existingUser.length === 0) {
       return res.status(400).json({
-        message: "Usuario não encontrado. Verifique os dados e tente novamente.",
+        message:
+          "Usuario não encontrado. Verifique os dados e tente novamente.",
         success: false,
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "DELETE FROM User WHERE idUser = ?",
       [idUser]
     );
 
     if (result.affectedRows === 0) {
       return res.status(400).json({
-        message: "Usuario não encontrado. Verifique os dados e tente novamente.",
+        message:
+          "Usuario não encontrado. Verifique os dados e tente novamente.",
         success: false,
       });
     }
@@ -389,11 +465,19 @@ exports.deleteAccountUser = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateUserForgotPassword = async (req, res) => {
+  let connection;
+
   try {
+    connection = await getConnection();
+
     const { email, newPassword } = req.body;
 
     if (!email || !newPassword) {
@@ -403,18 +487,21 @@ exports.updateUserForgotPassword = async (req, res) => {
       });
     }
 
-    const [user] = await pool.query("SELECT * FROM User WHERE email = ?", [email]);
+    const [user] = await connection.execute(
+      "SELECT * FROM User WHERE email = ?",
+      [email]
+    );
 
     if (user.length === 0) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         message: "Nenhum usuário encontrado.",
-        success: false 
+        success: false,
       });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    
-    const [result] = await pool.query(
+
+    const [result] = await connection.execute(
       "UPDATE User SET password = ? WHERE idUser = ?",
       [hashedPassword, user[0].idUser]
     );
@@ -436,5 +523,9 @@ exports.updateUserForgotPassword = async (req, res) => {
       message: "Erro interno do servidor ao atualizar senha",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };

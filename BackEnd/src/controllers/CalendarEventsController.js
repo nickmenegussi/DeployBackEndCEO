@@ -1,10 +1,12 @@
-const pool = require("../config/promise");
+const getConnection = require("../config/promise");
 
 exports.viewEventsByUser = async (req, res) => {
+  let connection;
   const User_idUser = req.data.id;
 
   try {
-    const [result] = await pool.query(
+    connection = await getConnection();
+    const [result] = await connection.execute(
       `SELECT * FROM CalendarEvents 
        WHERE User_idUser = ?
        ORDER BY createdDate DESC`,
@@ -30,12 +32,20 @@ exports.viewEventsByUser = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.viewAllEvents = async (req, res) => {
+  let connection;
+
   try {
-    const [result] = await pool.query(
+    connection = await getConnection();
+
+    const [result] = await connection.execute(
       `SELECT User_idUser, attachment, dateEvent, description, end, idCalendarEvents, link, start, title, status_permission 
        FROM CalendarEvents 
        INNER JOIN User WHERE status_permission = 'admin' OR status_permission = 'SuperAdmin'
@@ -61,15 +71,29 @@ exports.viewAllEvents = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.createEvent = async (req, res) => {
+  let connection;
+
   const attachment = req.file ? req.file.filename : null;
   const { title, description, start, end, link, dateEvent } = req.body;
   const User_idUser = req.data.id;
 
-  if (!title || !description || !start || !end || !link || !dateEvent || !attachment) {
+  if (
+    !title ||
+    !description ||
+    !start ||
+    !end ||
+    !link ||
+    !dateEvent ||
+    !attachment
+  ) {
     return res.status(400).json({
       message: "Preencha todos os campos.",
       success: false,
@@ -77,7 +101,9 @@ exports.createEvent = async (req, res) => {
   }
 
   try {
-    const [existingEvent] = await pool.query(
+    connection = await getConnection();
+
+    const [existingEvent] = await connection.execute(
       `SELECT * FROM CalendarEvents WHERE title = ? AND description = ? AND start = ? AND end = ? AND User_idUser = ? AND link = ? AND dateEvent = ?`,
       [title, description, start, end, User_idUser, link, dateEvent]
     );
@@ -90,7 +116,7 @@ exports.createEvent = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       `INSERT INTO CalendarEvents (title, link, description, start, end, attachment, dateEvent, User_idUser) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [title, link, description, start, end, attachment, dateEvent, User_idUser]
@@ -107,10 +133,16 @@ exports.createEvent = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateEventLink = async (req, res) => {
+  let connection;
+
   const { link } = req.body;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
@@ -123,7 +155,9 @@ exports.updateEventLink = async (req, res) => {
   }
 
   try {
-    const [existingEvent] = await pool.query(
+    connection = await getConnection();
+
+    const [existingEvent] = await connection.execute(
       "SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
       [idCalendarEvents, User_idUser]
     );
@@ -136,7 +170,7 @@ exports.updateEventLink = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE CalendarEvents SET link = ? WHERE idCalendarEvents = ? AND User_idUser = ?",
       [link, idCalendarEvents, User_idUser]
     );
@@ -152,10 +186,16 @@ exports.updateEventLink = async (req, res) => {
       message: "Erro ao se conectar com o servidor",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateEventTitle = async (req, res) => {
+  let connection;
+
   const { title } = req.body;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
@@ -168,7 +208,9 @@ exports.updateEventTitle = async (req, res) => {
   }
 
   try {
-    const [existingEvent] = await pool.query(
+    connection = await getConnection();
+
+    const [existingEvent] = await connection.execute(
       "SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
       [idCalendarEvents, User_idUser]
     );
@@ -181,7 +223,7 @@ exports.updateEventTitle = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE CalendarEvents SET title = ? WHERE idCalendarEvents = ? AND User_idUser = ?",
       [title, idCalendarEvents, User_idUser]
     );
@@ -201,6 +243,8 @@ exports.updateEventTitle = async (req, res) => {
 };
 
 exports.updateEventdescription = async (req, res) => {
+  let connection;
+
   const { description } = req.body;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
@@ -213,7 +257,9 @@ exports.updateEventdescription = async (req, res) => {
   }
 
   try {
-    const [existingEvent] = await pool.query(
+    connection = await getConnection();
+
+    const [existingEvent] = await connection.execute(
       "SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
       [idCalendarEvents, User_idUser]
     );
@@ -226,7 +272,7 @@ exports.updateEventdescription = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE CalendarEvents SET description = ? WHERE idCalendarEvents = ? AND User_idUser = ?",
       [description, idCalendarEvents, User_idUser]
     );
@@ -242,10 +288,16 @@ exports.updateEventdescription = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateEventStart = async (req, res) => {
+  let connection;
+
   const { start } = req.body;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
@@ -258,7 +310,9 @@ exports.updateEventStart = async (req, res) => {
   }
 
   try {
-    const [existingEvent] = await pool.query(
+    connection = await getConnection();
+
+    const [existingEvent] = await connection.execute(
       "SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
       [idCalendarEvents, User_idUser]
     );
@@ -271,7 +325,7 @@ exports.updateEventStart = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE CalendarEvents SET start = ? WHERE idCalendarEvents = ? AND User_idUser = ?",
       [start, idCalendarEvents, User_idUser]
     );
@@ -287,10 +341,16 @@ exports.updateEventStart = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateEventEnd = async (req, res) => {
+  let connection;
+
   const { end } = req.body;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
@@ -303,7 +363,9 @@ exports.updateEventEnd = async (req, res) => {
   }
 
   try {
-    const [existingEvent] = await pool.query(
+    connection = await getConnection();
+
+    const [existingEvent] = await connection.execute(
       "SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
       [idCalendarEvents, User_idUser]
     );
@@ -316,7 +378,7 @@ exports.updateEventEnd = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE CalendarEvents SET end = ? WHERE idCalendarEvents = ? AND User_idUser = ?",
       [end, idCalendarEvents, User_idUser]
     );
@@ -332,10 +394,16 @@ exports.updateEventEnd = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateAttachment = async (req, res) => {
+    let connection;
+
   const attachment = req.file ? req.file.filename : null;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
@@ -348,7 +416,9 @@ exports.updateAttachment = async (req, res) => {
   }
 
   try {
-    const [existingEvent] = await pool.query(
+    connection = await getConnection();
+
+    const [existingEvent] = await connection.execute(
       "SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
       [idCalendarEvents, User_idUser]
     );
@@ -361,7 +431,7 @@ exports.updateAttachment = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE CalendarEvents SET attachment = ? WHERE idCalendarEvents = ? AND User_idUser = ?",
       [attachment, idCalendarEvents, User_idUser]
     );
@@ -377,15 +447,21 @@ exports.updateAttachment = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.deleteEvent = async (req, res) => {
+  let connection;
   const User_idUser = req.data.id;
   const idCalendarEvents = req.params.idCalendarEvents;
 
   try {
-    const [existingEvent] = await pool.query(
+    connection = await getConnection();
+    const [existingEvent] = await connection.execute(
       "SELECT * FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
       [idCalendarEvents, User_idUser]
     );
@@ -398,7 +474,7 @@ exports.deleteEvent = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "DELETE FROM CalendarEvents WHERE idCalendarEvents = ? AND User_idUser = ?",
       [idCalendarEvents, User_idUser]
     );
@@ -414,5 +490,9 @@ exports.deleteEvent = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };

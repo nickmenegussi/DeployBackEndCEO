@@ -1,9 +1,13 @@
-const pool = require("../config/promise");
+const getConnection = require("../config/promise");
 const nodemailer = require("nodemailer");
 
 exports.viewAllLoans = async (req, res) => {
+  let connection;
+
   try {
-    const [result] = await pool.query("SELECT * FROM Loans");
+    connection = await getConnection();
+
+    const [result] = await connection.execute("SELECT * FROM Loans");
 
     return res.status(200).json({
       message: "Sucesso ao exibir os empréstimos.",
@@ -16,14 +20,22 @@ exports.viewAllLoans = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.viewLoansByUser = async (req, res) => {
+  let connection;
+
   const idUser = req.data.id;
 
   try {
-    const [result] = await pool.query(
+    connection = await getConnection();
+
+    const [result] = await connection.execute(
       `SELECT idLoans, quantity, User_idUser, Book_idLibrary, nameBook, authorBook, image, tagsBook, bookCategory, date_aquisition, returnDate 
        FROM Loans l, Book b, User u
        WHERE b.idLibrary = l.Book_idLibrary
@@ -59,14 +71,18 @@ exports.viewLoansByUser = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 async function sendEmailPurchase(dataRecibo) {
-  const {data, error} = await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: "noreply@menegussiramos.com",
     to: dataRecibo.email,
-    subject: 'Confirmação de Empréstimo Realizado',
+    subject: "Confirmação de Empréstimo Realizado",
     html: `
   <div style="max-width: 600px; margin: auto; font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f9f9f9; border-radius: 8px; overflow: hidden; border: 1px solid #e0e0e0;">
     
@@ -127,8 +143,8 @@ async function sendEmailPurchase(dataRecibo) {
       <br />
       Este e-mail é automático, por favor, não responda.
     </div>
-  </div>`
-  })
+  </div>`,
+  });
 
   if (error) {
     console.error("Erro ao enviar recibo pelo email utilizando resend", error);
@@ -140,6 +156,8 @@ async function sendEmailPurchase(dataRecibo) {
 }
 
 exports.createLoan = async (req, res) => {
+  let connection;
+
   const Cart_idCart = req.params.Cart_idCart;
   const User_idUser = req.data.id;
   const { Book_idLibrary, quantity } = req.body;
@@ -152,8 +170,10 @@ exports.createLoan = async (req, res) => {
   }
 
   try {
+    connection = await getConnection();
+
     // Primeiro verifica se o carrinho existe e se a ação é de empréstimo
-    const [cartResult] = await pool.query(
+    const [cartResult] = await connection.execute(
       `SELECT * FROM Cart WHERE idCart = ?`,
       [Cart_idCart]
     );
@@ -174,7 +194,7 @@ exports.createLoan = async (req, res) => {
     }
 
     // Verificar duplicidade de empréstimos
-    const [existingLoan] = await pool.query(
+    const [existingLoan] = await connection.execute(
       "SELECT * FROM Loans WHERE Book_idLibrary = ? AND User_idUser = ?",
       [Book_idLibrary, User_idUser]
     );
@@ -187,7 +207,7 @@ exports.createLoan = async (req, res) => {
     }
 
     // Verificar quantidade disponível
-    const [bookResult] = await pool.query(
+    const [bookResult] = await connection.execute(
       "SELECT bookQuantity FROM Book WHERE idLibrary = ?",
       [Book_idLibrary]
     );
@@ -209,20 +229,20 @@ exports.createLoan = async (req, res) => {
     }
 
     // Criar empréstimo
-    const [loanResult] = await pool.query(
+    const [loanResult] = await connection.execute(
       `INSERT INTO Loans(User_idUser, Book_idLibrary, quantity, returnDate) 
        VALUES(?, ?, ?, DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 7 DAY))`,
       [User_idUser, Book_idLibrary, quantity]
     );
 
     // Atualizar quantidade do livro
-    await pool.query(
+    await connection.execute(
       "UPDATE Book SET bookQuantity = bookQuantity - ? WHERE idLibrary = ?",
       [quantity, Book_idLibrary]
     );
 
     // Verificar nova quantidade para definir o status
-    const [newQtyResult] = await pool.query(
+    const [newQtyResult] = await connection.execute(
       "SELECT bookQuantity FROM Book WHERE idLibrary = ?",
       [Book_idLibrary]
     );
@@ -236,13 +256,13 @@ exports.createLoan = async (req, res) => {
     }
 
     // Atualizar o status do livro
-    await pool.query(
+    await connection.execute(
       "UPDATE Book SET status_Available = ? WHERE idLibrary = ?",
       [newStatus, Book_idLibrary]
     );
 
     // Buscar dados para o recibo
-    const [receiptResult] = await pool.query(
+    const [receiptResult] = await connection.execute(
       `SELECT 
         l.idLoans,
         u.nameUser,
@@ -278,7 +298,9 @@ exports.createLoan = async (req, res) => {
     }
 
     // Remover item do carrinho
-    await pool.query(`DELETE FROM Cart WHERE idCart = ?`, [Cart_idCart]);
+    await connection.execute(`DELETE FROM Cart WHERE idCart = ?`, [
+      Cart_idCart,
+    ]);
 
     return res.status(201).json({
       success: true,
@@ -290,10 +312,16 @@ exports.createLoan = async (req, res) => {
       success: false,
       message: "Erro ao processar o empréstimo.",
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.updateReturnDate = async (req, res) => {
+  let connection;
+
   const idLoans = req.params.LoansId;
   const { returnDate } = req.body;
   const idUser = req.data.id;
@@ -306,7 +334,9 @@ exports.updateReturnDate = async (req, res) => {
   }
 
   try {
-    const [existingLoan] = await pool.query(
+    connection = await getConnection();
+
+    const [existingLoan] = await connection.execute(
       `SELECT * FROM Loans WHERE idLoans = ?`,
       [idLoans]
     );
@@ -325,7 +355,7 @@ exports.updateReturnDate = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       `UPDATE Loans SET returnDate = ? WHERE idLoans = ? AND User_idUser = ?`,
       [returnDate, idLoans, idUser]
     );
@@ -341,15 +371,23 @@ exports.updateReturnDate = async (req, res) => {
       success: false,
       message: "Erro ao atualizar a data do empréstimo do livro.",
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };
 
 exports.deleteLoan = async (req, res) => {
+  let connection;
+
   const idLoans = req.params.LoansId;
   const idUser = req.data.id;
 
   try {
-    const [existingLoan] = await pool.query(
+    connection = await getConnection();
+
+    const [existingLoan] = await connection.execute(
       `SELECT * FROM Loans WHERE idLoans = ?`,
       [idLoans]
     );
@@ -368,7 +406,7 @@ exports.deleteLoan = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       `DELETE FROM Loans WHERE idLoans = ? AND User_idUser = ?`,
       [idLoans, idUser]
     );
@@ -392,5 +430,9 @@ exports.deleteLoan = async (req, res) => {
       message: "Erro ao se conectar com o servidor.",
       success: false,
     });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 };

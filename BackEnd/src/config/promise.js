@@ -1,26 +1,28 @@
 const mysql = require("mysql2/promise");
 
-const pool = mysql.createPool({
+const dbConfig = {
   host: process.env.MYSQL_ADDON_HOST,
   user: process.env.MYSQL_ADDON_USER,
   password: process.env.MYSQL_ADDON_PASSWORD,
   database: process.env.MYSQL_ADDON_DB,
   port: parseInt(process.env.MYSQL_ADDON_PORT),
-  waitForConnections: true,
-  connectionLimit: 3,
-  queueLimit: 10,
-  waitForConnections: true, // Coloca na fila se todas ocupadas
-  queueLimit: 20,          // Até 20 requisições na fila
-  acquireTimeout: 10000
-});
+};
 
-pool.getConnection((err) => {
-    if(err){
-        throw err
-    } else {
-        console.log('MySQL Pool configurado - connectionLimit: 3');
-        console.log('Banco conectado')
-    }
-})
+/**
+ * Função assíncrona para obter uma nova conexão.
+ * Cada chamada a esta função tentará estabelecer uma nova conexão.
+ * @returns {Promise<mysql.Connection>} A conexão MySQL.
+ */
 
-module.exports = pool
+async function getConnection() {
+  console.log("Banco conectado")
+  try {
+    const connection = await mysql.createConnection(dbConfig)
+    console.log("Nova conexão MySQL estabelecida.")
+    return connection
+  } catch (err) {
+    console.error("Erro ao estabelecer conexão MySQL:", err);
+    throw err;
+  }
+}
+module.exports = getConnection;

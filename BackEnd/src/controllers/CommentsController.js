@@ -1,11 +1,15 @@
-const pool = require('../config/promise')
+const getConnection = require("../config/promise");
 
 // menos verboso, mais elegante e seguro... evita callbacks
 // callbacks = É uma função passada como argumento para ser executada depois que uma operação terminar.
 exports.getCommentsByPostId = async (req, res) => {
+  let connection;
+
   const { postId } = req.params;
   try {
-    const [rows] = await pool.query(`
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
       SELECT
         c.idComments,
         c.message AS content,
@@ -17,170 +21,175 @@ exports.getCommentsByPostId = async (req, res) => {
       JOIN User u ON c.User_idUser = u.idUser
       WHERE c.Post_idPost = ?
       ORDER BY c.createdDate ASC
-    `, [postId]);
-    res.status(200).json(rows);
+    `,
+      [postId]
+    );
+    return res.status(200).json(rows);
   } catch (error) {
-    console.error('Erro ao buscar comentários:', error);
-    res.status(500).json({ message: 'Erro interno do servidor ao buscar comentários.' });
+    console.error("Erro ao buscar comentários:", error);
+    return res
+      .status(500)
+      .json({ message: "Erro interno do servidor ao buscar comentários." });
   }
 };
 
-exports.createComment = (req, res) => {
-    const {postId} = req.params
-    const { message } = req.body
-    const User_idUser = req.data.id
+exports.createComment = async (req, res) => {
+  let connection;
 
-    if (!postId || !message) {
-        return res.status(400).json({ error: "Campos obrigatórios não preenchidos" });
+  const { postId } = req.params;
+  const { message } = req.body;
+  const User_idUser = req.data.id;
+
+  if (!postId || !message) {
+    return res
+      .status(400)
+      .json({ error: "Campos obrigatórios não preenchidos" });
+  }
+
+  try {
+    connection = await getConnection();
+    const [result] = await connection.execute(
+      `SELECT * FROM comments WHERE Post_idPost = ? AND User_idUser = ? AND message = ?`,
+      [postId, User_idUser, message]
+    );
+
+    if (result.length > 0) {
+      return res.status(409).json({
+        message: "Comentário duplicado: tente escrever algo diferente.",
+        success: false,
+      });
     }
 
-    pool.query(`SELECT * FROM comments WHERE Post_idPost = ? AND User_idUser = ? AND message = ?`, [postId, User_idUser, message], (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err,
-              })
-        } 
-
-        if(result.length > 0){
-            return res.status(409).json({
-                message: "Comentário duplicado: tente escrever algo diferente.",
-                success: false,
-                data: err
-            })
-        } 
-        
-        pool.query(`INSERT INTO comments (Post_idPost, User_idUser, message) 
+    const [createComment] = await connection.execute(
+      `INSERT INTO comments (Post_idPost, User_idUser, message) 
         VALUES (?, ?, ?)
-        `, [postId, User_idUser, message], (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                message: "Erro interno do servidor ao criar comentário.",
-                success: false,
-                data: err,
-              })
-        } 
+        `,
+      [postId, User_idUser, message]
+    );
+    if (createComment.affectedRows > 0) {
+      return res.status(201).json({
+        message: "Comentário criado com sucesso.",
+        success: true,
+        data: {
+          idComments: createComment.insertId,
+          UserId: User_idUser,
+          content: message,
+        },
+      });
+    }
+  } catch (error) {
+    console.error("Erro ao criar um comentário:", error);
 
-        return res.status(201).json({
-            message: "Comentário criado com sucesso.",
-            success: true,
-            data: {idComments: result.insertId, UserId: User_idUser, content: message}
-        })
-    })
-    })
-}
+    return res.status(500).json({
+      message: "Erro interno do servidor ao criar comentário.",
+      success: false,
+      data: error,
+    });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
+  }
+};
 
-exports.updateComment = (req, res) => {
-    const idComments = req.params.idComments
-    const { message } = req.body
-    const User_idUser = req.data.id
+exports.updateComment = async (req, res) => {
+  let connection;
 
-    pool.query(`SELECT * FROM comments WHERE idComments = ? AND User_idUser = ?`, (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err,
-              })
-        } 
+  const idComments = req.params.idComments;
+  const { message } = req.body;
+  const User_idUser = req.data.id;
 
-        if(result.length === 0){
-            return res.status(404).json({
-                message: "Comentário não encontrado.",
-                success: false,
-                data: result
-            })
-        } 
+  try {
+    connection = await getConnection();
+    const [result] = await connection.execute(
+      `SELECT * FROM comments WHERE idComments = ? AND User_idUser = ?`
+    );
+    if (result.length === 0) {
+      return res.status(404).json({
+        message: "Comentário não encontrado.",
+        success: false,
+        data: result,
+      });
+    }
 
-        if(result[0].User_idUser !== User_idUser) {
-            return res.status(403).json({
-                message: "Você não tem permissão para acessar essa seção.",
-                success: false
-            })
-        }
+    if (result[0].User_idUser !== User_idUser) {
+      return res.status(403).json({
+        message: "Você não tem permissão para acessar essa seção.",
+        success: false,
+      });
+    }
+    const [updatedComment] = await connection.execute(
+      `UPDATE comments SET message = ? WHERE idComments = ? AND User_idUser = ?`,
+      [message, idComments, User_idUser]
+    );
+    if (updatedComment.affectedRows > 0) {
+      return res.status(201).json({
+        message: "Comentário atualizado com sucesso.",
+        success: true,
+        data: result,
+      });
+    }
+  } catch (error) {
+    console.error("Erro ao atualizar um comentário: ", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+      data: err,
+    });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
+  }
+};
 
-        pool.query(`UPDATE comments SET message = ? WHERE idComments = ? AND User_idUser = ?`, [message, idComments, User_idUser], (err, result) => {
-            if (err) {
-                return res.status(500).json({
-                    message: "Erro ao se conectar com o servidor.",
-                    success: false,
-                    data: err,
-                  })
-            } 
-    
-            if(result.affectedRows === 0){
-                return res.status(400).json({
-                    message: "Erro ao atualizar comentário.",
-                    success: false,
-                    data: result
-                })
-            } 
-    
-            return res.status(201).json({
-                message: "Comentário atualizado com sucesso.",
-                success: true,
-                data: result
-            })
-        })
-    })
-}
+exports.deleteComment = async (req, res) => {
+  let connection;
 
-exports.deleteComment = (req, res) => { 
+  const idComments = req.params.idComments;
+  const User_idUser = req.data.id;
 
-    const idComments = req.params.idComments
-    const User_idUser = req.data.id
+  try {
+    connection = await getConnection();
+    const [result] = await connection.execute(
+      `SELECT * FROM comments WHERE idComments = ? AND User_idUser = ?`
+    );
 
-    pool.query(`SELECT * FROM comments WHERE idComments = ? AND User_idUser = ?`, (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                message: "Erro ao se conectar com o servidor.",
-                success: false,
-                data: err,
-              })
-        } 
+    if (result[0].User_idUser !== User_idUser) {
+      return res.status(403).json({
+        message: "Você não tem permissão para acessar essa seção.",
+        success: false,
+      });
+    }
 
-        if(result.length === 0){
-            return res.status(404).json({
-                message: "Comentário não encontrado.",
-                success: false,
-                data: result
-            })
-        } 
+    if (result.length === 0) {
+      return res.status(404).json({
+        message: "Comentário não encontrado.",
+        success: false,
+        data: result,
+      });
+    }
+    const [ResultDeleteComment] = await connection.execute();
+    if (ResultDeleteComment.affectedRows > 0) {
+      const io = getIO();
+      io.emit("commentDeleted", { idComments, User_idUser });
 
-        if(result[0].User_idUser !== User_idUser) {
-            return res.status(403).json({
-                message: "Você não tem permissão para acessar essa seção.",
-                success: false
-            })
-        }
-
-        pool.query(`DELETE FROM comments WHERE idComments = ? AND User_idUser = ?`, [idComments, User_idUser], (err, result) => {
-            if (err) {
-                return res.status(500).json({
-                    message: "Erro ao se conectar com o servidor.",
-                    success: false,
-                    data: err,
-                  })
-            } 
-    
-            if(result.affectedRows === 0){
-                return res.status(400).json({
-                    message: "Erro ao deletar comentário.",
-                    success: false,
-                    data: result
-                })
-            } 
-
-            // Emitindo um evento para o socket.io
-            const io = getIO()
-            io.emit('commentDeleted', { idComments, User_idUser })
-    
-            return res.status(201).json({
-                message: "Comentário deletado com sucesso.",
-                success: true,
-                data: result
-            })
-        })
-    })
-}
+      return res.status(201).json({
+        message: "Comentário deletado com sucesso.",
+        success: true,
+        data: result,
+      });
+    }
+  } catch (error) {
+    console.error("Erro ao deletar comentário: ", error);
+    return res.status(500).json({
+      message: "Erro ao se conectar com o servidor.",
+      success: false,
+      data: error,
+    });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
+  }
+};
