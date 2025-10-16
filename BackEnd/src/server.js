@@ -40,8 +40,12 @@ const corsOptions = {
 }
 
 
-app.use(cors(corsOptions)); // permitir que os navegadores acessem diferentes domíniose
-app.use(express.json());
+app.use(cors({
+  origin: true, // Permite qualquer origem
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/swagger-ui', express.static('node_modules/swagger-ui-dist/'));
 
