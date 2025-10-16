@@ -82,8 +82,8 @@ exports.viewAllUser = async (req, res) => {
 exports.register = async (req, res) => {
   let connection;
 
-  const image_profile = null;
   const { nameUser, email, password } = req.body;
+  const imageFile = req.file; // Arquivo de imagem enviado via multer
 
   if (!nameUser || !email || !password) {
     return res.status(400).json({
@@ -95,8 +95,7 @@ exports.register = async (req, res) => {
   try {
     connection = await getConnection();
 
-    const hash_password = await bcrypt.hash(password, 10);
-
+    // Verificar se o usuário já existe
     const [existingUser] = await connection.execute(
       "SELECT * FROM User WHERE nameUser = ? AND email = ?",
       [nameUser, email]
@@ -104,11 +103,12 @@ exports.register = async (req, res) => {
 
     if (existingUser.length > 0) {
       return res.status(422).json({
-        message: "Esse usário já existe, por favor, faça login.",
+        message: "Esse usuário já existe, por favor, faça login.",
         success: false,
       });
     }
 
+    // Verificar se o email já foi cadastrado
     const [existingEmail] = await connection.execute(
       "SELECT idUser FROM User WHERE email = ?",
       [email]
@@ -121,15 +121,53 @@ exports.register = async (req, res) => {
       });
     }
 
+    let imageUrl = null;
+
+    // Se houver uma imagem, fazer upload para o Cloudinary
+    if (imageFile) {
+      try {
+        const resultUploadImage = await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            {
+              folder: "profile_pictures",
+              resource_type: "image",
+            },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          );
+          stream.end(imageFile.buffer);
+        });
+        
+        imageUrl = resultUploadImage.secure_url;
+      } catch (uploadError) {
+        console.error("Erro ao fazer upload da imagem:", uploadError);
+        return res.status(500).json({
+          success: false,
+          message: "Erro ao fazer upload da imagem de perfil.",
+        });
+      }
+    }
+
+    // Hash da senha
+    const hash_password = await bcrypt.hash(password, 10);
+
+    // Inserir usuário no banco de dados
     const [result] = await connection.execute(
       "INSERT INTO User(nameUser, email, password, image_profile, status_permission) VALUES(?, ?, ?, ?, ?)",
-      [nameUser, email, hash_password, image_profile, "User"]
+      [nameUser, email, hash_password, imageUrl, "User"]
     );
 
     return res.status(201).json({
       success: true,
       message: "Usuário cadastrado com sucesso",
-      data: result,
+      data: {
+        id: result.insertId,
+        nameUser,
+        email,
+        image_profile: imageUrl
+      },
     });
   } catch (error) {
     console.error("Erro ao registrar usuário:", error);

@@ -8,7 +8,7 @@ const verifyPermission = require('../middleware/roleMiddleware')
 router.get('/user/:userId', authMiddleware, verifyPermission(['admin', 'SuperAdmin', 'User']),viewOnlyUser)
 router.get('/user', authMiddleware, verifyPermission(['admin', 'SuperAdmin']) ,viewAllUser)
 
-router.post('/user/register' ,register)
+router.post('/user/register', upload.single('image_profile') ,register)
 
 router.patch('/user/name',authMiddleware , updateUserName)
 router.patch('/user/profile', authMiddleware ,updateUser)
