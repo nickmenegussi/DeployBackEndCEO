@@ -8,7 +8,7 @@ const {
   updateLectureDescription,
   updateLectureDate,
   updateLectureTime,
-  // updateLecturelink_url,
+  updateLecturelink_url,
   updateLectureVideoUrl,
   deleteLecture,
 } = require('../controllers/LectureController')
@@ -24,7 +24,7 @@ router.patch('/lectures/:idLecture/nameLecture', authMiddleware, verifyPermissio
 router.patch('/lectures/:idLecture/description', authMiddleware, verifyPermission(['SuperAdmin', 'admin']), updateLectureDescription)
 router.patch('/lectures/:idLecture/dateLecture', authMiddleware, verifyPermission(['SuperAdmin', 'admin']), updateLectureDate)
 router.patch('/lectures/:idLecture/timeLecture', authMiddleware, verifyPermission(['SuperAdmin', 'admin']), updateLectureTime)
-// router.patch('/lectures/:idLecture/link_url', authMiddleware, verifyPermission(['SuperAdmin', 'admin']), updateLecturelink_url)
+router.patch('/lectures/:idLecture/link_url', authMiddleware, verifyPermission(['SuperAdmin', 'admin']), updateLecturelink_url)
 router.patch('/lectures/:idLecture/video_url', authMiddleware, verifyPermission(['SuperAdmin', 'admin']), updateLectureVideoUrl)
 router.delete('/lectures/:idLecture/delete', authMiddleware, verifyPermission(['SuperAdmin', 'admin']), deleteLecture)
 
