@@ -33,20 +33,35 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerDocs = require("./docs/swagger.json");
 
 const app = express();
-const corsOptions = {
-  origin: isDev ? 'http://localhost:3001' : ['https://deploy-back-end-ceo.vercel.app'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
-}
-
-
+// ✅ MIDDLEWARE CORS DEVE VIR PRIMEIRO
 app.use(cors({
   origin: true, // Permite qualquer origem
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));app.use(express.json());
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+
+// ✅ HANDLER EXPLÍCITO PARA PREFLIGHT REQUESTS
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.status(200).send();
+});
+
+// ✅ SEU MIDDLEWARE NORMAL
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// ✅ MIDDLEWARE DE LOG PARA DEBUG
+app.use((req, res, next) => {
+  console.log(`➡️ ${req.method} ${req.path} - Origin: ${req.headers.origin}`);
+  next();
+});
+
+
+
 app.use('/swagger-ui', express.static('node_modules/swagger-ui-dist/'));
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs, {
