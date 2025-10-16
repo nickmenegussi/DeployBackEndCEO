@@ -33,8 +33,14 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerDocs = require("./docs/swagger.json");
 
 const app = express();
+const corsOptions = {
+  origin: isDev ? 'http://localhost:3001' : ['https://deploy-back-end-ceo.vercel.app'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+}
 
-app.use(cors()); // permitir que os navegadores acessem diferentes domíniose
+
+app.use(cors(corsOptions)); // permitir que os navegadores acessem diferentes domíniose
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/swagger-ui', express.static('node_modules/swagger-ui-dist/'));
