@@ -5,6 +5,8 @@ exports.viewAllLectures = async (req, res) => {
   let connection;
 
   try {
+        connection = await getConnection();
+
     const [result] = await connection.execute(`SELECT * FROM Lecture`);
 
     if (result.length === 0) {

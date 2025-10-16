@@ -33,6 +33,7 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerDocs = require("./docs/swagger.json");
 
 const app = express();
+
 // ✅ MIDDLEWARE CORS DEVE VIR PRIMEIRO
 app.use(cors({
   origin: true, // Permite qualquer origem
@@ -53,14 +54,6 @@ app.options('*', (req, res) => {
 // ✅ SEU MIDDLEWARE NORMAL
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// ✅ MIDDLEWARE DE LOG PARA DEBUG
-app.use((req, res, next) => {
-  console.log(`➡️ ${req.method} ${req.path} - Origin: ${req.headers.origin}`);
-  next();
-});
-
-
 
 app.use('/swagger-ui', express.static('node_modules/swagger-ui-dist/'));
 
