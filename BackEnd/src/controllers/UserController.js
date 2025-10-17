@@ -182,25 +182,37 @@ exports.register = async (req, res) => {
   }
 };
 
-exports.updateUser = async (req, res) => {
+exports.updateUserEmail = async (req, res) => {
   let connection;
 
-  const idUser = req.data.id;
-  const { email } = req.body;
+  const loggedInUserRole = req.data.status_permission
+  const loggedInIdUser = req.data.id;
+  const { email, targetUserId } = req.body;
 
-  if (!idUser || !email) {
+  const isTryingToUpdateOtherUser = targetUserId !== loggedInIdUser
+  const idUserToUpdate = isTryingToUpdateOtherUser ? targetUserId : loggedInIdUser
+
+  if (!idUserToUpdate || !email) {
     return res.status(400).json({
       success: false,
       message: "Preencha todos os campos de cadastro",
     });
   }
 
+  if(isTryingToUpdateOtherUser && !['admin', 'SuperAdmin'].includes(loggedInUserRole)){
+    return res.status(403).json({
+      success: false,
+      message: "Você não tem permissão para atualizar outros usuários.",
+    });
+  }
+
+
   try {
     connection = await getConnection();
 
     const [existingUser] = await connection.execute(
       "SELECT * FROM User WHERE idUser = ?",
-      [idUser]
+      [idUserToUpdate]
     );
 
     if (existingUser.length === 0) {
@@ -213,7 +225,7 @@ exports.updateUser = async (req, res) => {
 
     const [result] = await connection.execute(
       "UPDATE User SET email = ? WHERE idUser = ?",
-      [email, idUser]
+      [email, idUserToUpdate]
     );
 
     return res.status(200).json({
@@ -232,19 +244,30 @@ exports.updateUser = async (req, res) => {
       await connection.end();
     }
   }
-};
+}
 
 exports.updateUserName = async (req, res) => {
   let connection;
+  
+  const loggedInUserId = req.data.id;
+  const loggedInUserRole = req.data.status_permission
+  const { nameUser, targetUserId } = req.body;
 
-  const idUser = req.data.id;
-  const { nameUser } = req.body;
+  const isTryingToUpdateOtherUser = targetUserId !== loggedInUserId
+  const idUserToUpdate = isTryingToUpdateOtherUser ? targetUserId : loggedInUserId
 
-  if (!nameUser) {
+  if (!nameUser || !idUserToUpdate) {
     return res.status(400).json({
       success: false,
-      message: "O campo 'nameUser' é obrigatório.",
+      message: "O campo 'nameUser' é obrigatório e a identificação do usuário são necessárias.",
     });
+  }
+
+  if(isTryingToUpdateOtherUser && !['admin', 'SuperAdmin'].includes(loggedInUserRole)){
+    return res.status(403).json({
+      success: false,
+      message: 'Você não tem permissão para atualizar outros usuários.'
+    })
   }
 
   try {
@@ -252,7 +275,7 @@ exports.updateUserName = async (req, res) => {
 
     const [existingUser] = await connection.execute(
       "SELECT * FROM User WHERE idUser = ?",
-      [idUser]
+      [idUserToUpdate]
     );
 
     if (existingUser.length === 0) {
@@ -264,7 +287,7 @@ exports.updateUserName = async (req, res) => {
 
     const [result] = await connection.execute(
       "UPDATE User SET nameUser = ? WHERE idUser = ?",
-      [nameUser, idUser]
+      [nameUser, idUserToUpdate]
     );
 
     if (result.affectedRows === 0) {
