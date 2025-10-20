@@ -185,7 +185,7 @@ exports.register = async (req, res) => {
 exports.updateUserEmail = async (req, res) => {
   let connection;
 
-  const loggedInUserRole = req.data.status_permission
+  const loggedInUserRole = req.data.role
   const loggedInIdUser = req.data.id;
   const { email, targetUserId } = req.body;
 
@@ -250,17 +250,16 @@ exports.updateUserName = async (req, res) => {
   let connection;
   
   const loggedInUserId = req.data.id;
-  const loggedInUserRole = req.data.status_permission
+  const loggedInUserRole = req.data.role
   const { nameUser, targetUserId } = req.body;
 
   const isTryingToUpdateOtherUser = targetUserId !== loggedInUserId
   const idUserToUpdate = isTryingToUpdateOtherUser ? targetUserId : loggedInUserId
-
   if (!nameUser || !idUserToUpdate) {
     return res.status(400).json({
       success: false,
       message: "O campo 'nameUser' é obrigatório e a identificação do usuário são necessárias.",
-    });
+    })
   }
 
   if(isTryingToUpdateOtherUser && !['admin', 'SuperAdmin'].includes(loggedInUserRole)){
@@ -398,7 +397,7 @@ exports.updateUserImageProfile = async (req, res) => {
 
   const image_profile = req.file;
   const idUser = req.data.id;
-
+  
   if (!idUser || !image_profile) {
     return res.status(400).json({
       success: false,

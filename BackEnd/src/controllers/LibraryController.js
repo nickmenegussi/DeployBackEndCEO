@@ -6,7 +6,7 @@ exports.viewAllBooks = async (req, res) => {
   try {
     connection = await getConnection();
 
-    const [result] = await pool.query("SELECT * FROM Book");
+    const [result] = await connection.execute("SELECT * FROM Book");
 
     return res.status(200).json({
       message: "Sucesso ao exibir os livros.",
@@ -34,7 +34,7 @@ exports.viewOnlyOneBook = async (req, res) => {
   try {
     connection = await getConnection();
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "SELECT * FROM Book WHERE idLibrary = ?",
       [idLibrary]
     );
@@ -67,7 +67,7 @@ exports.viewOnlyOneBook = async (req, res) => {
 exports.createBook = async (req, res) => {
   let connection;
 
-  const image = req.file ? req.file.filename : null;
+  const image = req.file;
   const {
     namebook,
     authorBook,
@@ -128,7 +128,7 @@ exports.createBook = async (req, res) => {
   try {
     connection = await getConnection();
 
-    const [existingBook] = await pool.query(
+    const [existingBook] = await connection.execute(
       "SELECT * FROM Book WHERE status_Available = ? AND image = ? AND bookCategory = ? AND namebook = ? AND authorBook = ? AND tagsBook = ? AND overviewBook = ? AND curiosityBook = ?",
       [
         status_Available,
@@ -149,7 +149,7 @@ exports.createBook = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "INSERT INTO Book(namebook, authorBook, image, overviewBook, curiosityBook, tagsBook, bookQuantity, status_Available, bookCategory) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         namebook,
@@ -199,7 +199,7 @@ exports.updateNameBook = async (req, res) => {
   try {
     connection = await getConnection();
 
-    const [existingBook] = await pool.query(
+    const [existingBook] = await connection.execute(
       "SELECT * FROM Book WHERE idLibrary = ?",
       [idLibrary]
     );
@@ -211,7 +211,7 @@ exports.updateNameBook = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE Book SET nameBook = ? WHERE idLibrary = ?",
       [nameBook, idLibrary]
     );
@@ -250,7 +250,7 @@ exports.updateAuthorBook = async (req, res) => {
   try {
     connection = await getConnection();
 
-    const [existingBook] = await pool.query(
+    const [existingBook] = await connection.execute(
       "SELECT * FROM Book WHERE idLibrary = ?",
       [idLibrary]
     );
@@ -262,7 +262,7 @@ exports.updateAuthorBook = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE Book SET authorBook = ? WHERE idLibrary = ?",
       [authorBook, idLibrary]
     );
@@ -301,7 +301,7 @@ exports.updateTagBook = async (req, res) => {
   try {
     connection = await getConnection();
 
-    const [existingBook] = await pool.query(
+    const [existingBook] = await connection.execute(
       "SELECT * FROM Book WHERE idLibrary = ?",
       [idLibrary]
     );
@@ -313,7 +313,7 @@ exports.updateTagBook = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE Book SET tagsBook = ? WHERE idLibrary = ?",
       [tagsBook, idLibrary]
     );
@@ -353,7 +353,7 @@ exports.updateOverView = async (req, res) => {
   try {
     connection = await getConnection();
 
-    const [existingBook] = await pool.query(
+    const [existingBook] = await connection.execute(
       "SELECT * FROM Book WHERE idLibrary = ?",
       [idLibrary]
     );
@@ -365,7 +365,7 @@ exports.updateOverView = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE Book SET overviewBook = ? WHERE idLibrary = ?",
       [overviewBook, idLibrary]
     );
@@ -405,7 +405,7 @@ exports.updateCuriosityBook = async (req, res) => {
   try {
     connection = await getConnection();
 
-    const [existingBook] = await pool.query(
+    const [existingBook] = await connection.execute(
       "SELECT * FROM Book WHERE idLibrary = ?",
       [idLibrary]
     );
@@ -417,7 +417,7 @@ exports.updateCuriosityBook = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE Book SET curiosityBook = ? WHERE idLibrary = ?",
       [curiosityBook, idLibrary]
     );
@@ -456,7 +456,7 @@ exports.updateBookQuantity = async (req, res) => {
   try {
     connection = await getConnection();
 
-    const [existingBook] = await pool.query(
+    const [existingBook] = await connection.execute(
       "SELECT * FROM Book WHERE idLibrary = ?",
       [idLibrary]
     );
@@ -468,7 +468,7 @@ exports.updateBookQuantity = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE Book SET bookQuantity = ? WHERE idLibrary = ?",
       [bookQuantity, idLibrary]
     );
@@ -519,7 +519,7 @@ exports.updateStatusAvailable = async (req, res) => {
   try {
     connection = await getConnection();
 
-    const [existingBook] = await pool.query(
+    const [existingBook] = await connection.execute(
       "SELECT * FROM Book WHERE idLibrary = ?",
       [idLibrary]
     );
@@ -531,7 +531,7 @@ exports.updateStatusAvailable = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "UPDATE Book SET status_Available = ? WHERE idLibrary = ?",
       [status_Available, idLibrary]
     );
@@ -562,7 +562,7 @@ exports.deleteBook = async (req, res) => {
   try {
     connection = await getConnection();
 
-    const [existingBook] = await pool.query(
+    const [existingBook] = await connection.execute(
       "SELECT * FROM Book WHERE idLibrary = ?",
       [idLibrary]
     );
@@ -574,7 +574,7 @@ exports.deleteBook = async (req, res) => {
       });
     }
 
-    const [result] = await pool.query("DELETE FROM Book WHERE idLibrary = ?", [
+    const [result] = await connection.execute("DELETE FROM Book WHERE idLibrary = ?", [
       idLibrary,
     ]);
 

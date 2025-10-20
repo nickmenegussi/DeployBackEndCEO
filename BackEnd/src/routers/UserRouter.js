@@ -14,7 +14,7 @@ router.patch('/user/nameUser' ,authMiddleware , updateUserName)
 router.patch('/user/email', authMiddleware ,updateUserEmail)
 router.patch('/user/password', authMiddleware ,updateUserPassword )
 router.patch('/user/forgot-password', updateUserForgotPassword)
-router.patch('/user/picture', authMiddleware , upload.single('image'), updateUserImageProfile)
+router.patch('/user/image_profile', authMiddleware , upload.single('image'), updateUserImageProfile)
 
 router.delete('/user/:idUser/delete', authMiddleware ,verifyPermission(['SuperAdmin','admin']) , deleteAccountUser)
 
