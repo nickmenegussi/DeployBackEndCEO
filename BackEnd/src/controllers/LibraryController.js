@@ -1,4 +1,5 @@
 const getConnection = require("../config/promise");
+const cloudinary = require("../config/cloudinary");
 
 exports.viewAllBooks = async (req, res) => {
   let connection;
@@ -149,12 +150,40 @@ exports.createBook = async (req, res) => {
       });
     }
 
+    let imageUrl = null;
+
+    if (image) {
+      try {
+        const resultUploadImage = await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            {
+              folder: "profile_pictures",
+              resource_type: "image",
+            },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          );
+          stream.end(image.buffer);
+        });
+
+        imageUrl = resultUploadImage.secure_url;
+      } catch (uploadError) {
+        console.error("Erro ao fazer upload da imagem:", uploadError);
+        return res.status(500).json({
+          success: false,
+          message: "Erro ao fazer upload da imagem de perfil.",
+        });
+      }
+    }
+
     const [result] = await connection.execute(
       "INSERT INTO Book(namebook, authorBook, image, overviewBook, curiosityBook, tagsBook, bookQuantity, status_Available, bookCategory) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         namebook,
         authorBook,
-        image,
+        imageUrl,
         overviewBook,
         curiosityBook,
         tagsBook,
@@ -574,9 +603,10 @@ exports.deleteBook = async (req, res) => {
       });
     }
 
-    const [result] = await connection.execute("DELETE FROM Book WHERE idLibrary = ?", [
-      idLibrary,
-    ]);
+    const [result] = await connection.execute(
+      "DELETE FROM Book WHERE idLibrary = ?",
+      [idLibrary]
+    );
 
     if (result.affectedRows === 0) {
       return res.status(400).json({

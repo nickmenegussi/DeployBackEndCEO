@@ -3,7 +3,7 @@ const router = express.Router()
 const {viewAllBooks, viewOnlyOneBook, createBook, updateNameBook, updateAuthorBook, updateTagBook, updateOverView, updateCuriosityBook, updateBookQuantity, updateStatusAvailable, deleteBook} = require('../controllers/LibraryController')
 const authMiddleware = require('../middleware/authMidleware')
 const verifyPermission = require('../middleware/roleMiddleware')
-const upload = require("../multerConfig/multer")
+const upload = require("../middleware/uploadImage")
 
 router.get('/library/:idLibrary', authMiddleware, verifyPermission(['SuperAdmin', 'admin']), viewOnlyOneBook)
 router.get('/library', authMiddleware, verifyPermission(['SuperAdmin', 'admin', 'User']), viewAllBooks)

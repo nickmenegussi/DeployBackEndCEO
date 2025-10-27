@@ -173,7 +173,7 @@ exports.VerificationOtp = async (req, res) => {
   try {
     connection = await getConnection();
     // Limpa OTPs expirados
-    await connection.execute("DELETE FROM OTP WHERE expiresAt < NOW()");
+    // await connection.execute("DELETE FROM OTP WHERE NOW() > expiresAt");
 
     // Busca OTP
     const [result] = await connection.execute(

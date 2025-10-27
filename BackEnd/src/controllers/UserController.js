@@ -394,19 +394,42 @@ exports.updateUserPassword = async (req, res) => {
 
 exports.updateUserImageProfile = async (req, res) => {
   let connection;
-
+  const {targetUserId} = req.body
   const image_profile = req.file;
-  const idUser = req.data.id;
-  
-  if (!idUser || !image_profile) {
+  const loggedInIdUser = req.data.id
+  const loggedInUserRole = req.data.role
+  const isTryingToUpdateOtherUser = targetUserId !== loggedInIdUser 
+  const idUserToUpdate = isTryingToUpdateOtherUser ? targetUserId : loggedInIdUser
+
+
+  if (!idUserToUpdate || !image_profile) {
     return res.status(400).json({
       success: false,
       message: "Preencha todos os campos de cadastro",
     });
   }
 
+  if(isTryingToUpdateOtherUser && !['admin', 'SuperAdmin'].includes(loggedInUserRole)){
+    return res.status(403).json({
+      success: false,
+      message: 'Você não tem permissão para atualizar outros usuários.'
+    })
+  }
+
   try {
     connection = await getConnection();
+
+    const [existingUser] = await connection.execute(
+      "SELECT * FROM User WHERE idUser = ?",
+      [idUserToUpdate]
+    );
+
+    if (existingUser.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Usuário não encontrado.",
+      });
+    }
 
     const resultUploadImage = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
@@ -423,30 +446,18 @@ exports.updateUserImageProfile = async (req, res) => {
     });
     const imageUrl = resultUploadImage.secure_url;
 
-    // const imageUrl = `/uploads/${image_profile.filename}`; // Usando caminho local
-
-    const [existingUser] = await connection.execute(
-      "SELECT * FROM User WHERE idUser = ?",
-      [idUser]
-    );
-
-    if (existingUser.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Usuário não encontrado.",
-      });
-    }
-
     const [result] = await connection.execute(
       "UPDATE User SET image_profile = ? WHERE idUser = ?",
-      [imageUrl, idUser]
+      [imageUrl, idUserToUpdate]
     );
 
-    return res.status(200).json({
+    if(result.affectedRows > 0){
+      return res.status(200).json({
       success: true,
       message: "Imagem de perfil atualizada com sucesso.",
       data: { image_profile: imageUrl },
     });
+    }
   } catch (error) {
     console.error("Erro ao atualizar imagem de perfil:", error);
     return res.status(500).json({
