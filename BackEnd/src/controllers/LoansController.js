@@ -47,7 +47,7 @@ exports.viewLoansByUser = async (req, res) => {
     if (result.length === 0) {
       return res.status(404).json({
         success: false,
-        message: `Não conseguimos achar os empréstimos deste usuário.`,
+        message: `Nenhum empréstimo encontrado.`,
       });
     }
 

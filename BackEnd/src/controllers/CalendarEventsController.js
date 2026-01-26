@@ -48,7 +48,7 @@ exports.viewAllEvents = async (req, res) => {
       `SELECT User_idUser, attachment, dateEvent, description, end, idCalendarEvents, link, start, title, status_permission 
        FROM CalendarEvents 
        INNER JOIN User WHERE status_permission = 'admin' OR status_permission = 'SuperAdmin'
-       ORDER BY start DESC`
+      ` // ORDER BY start DESC
     );
 
     if (result.length === 0) {
@@ -89,8 +89,7 @@ exports.createEvent = async (req, res) => {
     !start ||
     !end ||
     !link ||
-    !dateEvent ||
-    !attachment
+    !dateEvent 
   ) {
     return res.status(400).json({
       message: "Preencha todos os campos.",

@@ -1,8 +1,6 @@
 const getConnection = require("../config/promise")
 
 exports.viewCartAll = async (req, res) => {
-  
-
   let connection
   const idUser = req.data.id
 
@@ -44,8 +42,6 @@ exports.viewCartByUser = async (req, res) => {
   try {
     connection = await getConnection();
     
-    
-
     const [result] = await connection.execute(
       `SELECT * FROM Cart c, User u, Book b
        WHERE c.User_idUser = u.idUser 
@@ -211,9 +207,6 @@ exports.createCart = async (req, res) => {
 
   try {
     connection = await getConnection();
-
-    connection = await getConnection()
-
     // Verifica se o usuário existe
     
     const [userResult] = await connection.execute(
