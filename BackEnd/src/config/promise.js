@@ -1,3 +1,4 @@
+// Para projetos Profissionais
 const mysql = require("mysql2/promise");
 
 const dbConfig = {
@@ -25,3 +26,4 @@ async function getConnection() {
   }
 }
 module.exports = getConnection;
+

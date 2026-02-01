@@ -4,34 +4,45 @@ Este é o backend do projeto **[CEO/Centro Espírita Online]**, desenvolvido com
 
 ## 🌟 Funcionalidades
 
-- Autenticação e autorização (JWT).
-- CRUD para gerenciamento de usuários e livros.
-- Middlewares para controle de permissões.
-- Upload de imagens (Multer).
-- Conexão com banco de dados MySQL.
+- **Autenticação e autorização:** Implementação de JWT para garantir a segurança das rotas e proteção dos dados do usuário.
+- **CRUD para gerenciamento de usuários e livros:** Permite a criação, leitura, atualização e exclusão de registros de usuários e livros.
+- **Middlewares para controle de permissões:** Implementação de middlewares que garantem que apenas usuários autorizados possam acessar determinadas rotas.
+- **Upload de imagens:** Utilização do Multer para gerenciar o upload de arquivos de imagem de forma eficiente.
+- **Conexão com banco de dados MySQL:** Integração com um banco de dados relacional para armazenamento persistente de dados.
 
 ## 🚀 Tecnologias Utilizadas
 
 ### Back-End:
 
-- **Node.js** (framework principal)
-- **Express.js** (gerenciamento de rotas e middlewares)
-- **MySQL** (banco de dados relacional)
-- **Multer** (upload de arquivos)
-- **JWT** (autenticação baseada em token)
-- **dotenv** (gerenciamento de variáveis de ambiente)
-- **bcrypt** (para criptografias)
+- **Node.js:** Ambiente de execução JavaScript no lado do servidor, utilizado como framework principal.
+- **Express.js:** Framework minimalista para Node.js, utilizado para gerenciamento de rotas e middlewares.
+- **MySQL:** Sistema de gerenciamento de banco de dados relacional, utilizado para armazenamento de dados.
+- **Multer:** Middleware para gerenciamento de uploads de arquivos, facilitando a manipulação de dados de entrada.
 
-## 📁 Estrutura do Projeto
+## 📦 Instalação
 
-project/
-├── config/           # Configurações (DB, upload, etc.)
-├── controllers/      # Lógica das rotas
-├── middleware/       # Middlewares personalizados
-├── routes/           # Definição das rotas do aplicativo
-├── utils/            # Funções utilitárias
-├── index.js          # Entrada principal do servidor
-└── package.json      # Configurações do Node.js e dependências
+Para instalar e executar o projeto, siga os passos abaixo:
+
+1. Clone o repositório:
+   ```bash
+   git clone <URL_DO_REPOSITORIO>
+   ```
+2. Navegue até o diretório do projeto:
+   ```bash
+   cd <NOME_DO_DIRETORIO>
+   ```
+3. Instale as dependências:
+   ```bash
+   npm install
+   ```
+4. Inicie o servidor:
+   ```bash
+   npm start
+   ```
+
+## 📄 Documentação da API
+
+A documentação da API pode ser acessada em [Swagger](<URL_DO_SWAGGER>).
 
 ## Script para adição de informações no Banco de Dados.
 

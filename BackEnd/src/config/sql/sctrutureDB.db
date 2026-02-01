@@ -169,15 +169,6 @@ CREATE TABLE OTP (
     INDEX idx_expires (expiresAt)
 );
 
--- Tabela VolunteerWork
-CREATE TABLE VolunteerWork (
-    idVolunteerWork INT AUTO_INCREMENT PRIMARY KEY,
-    nameVolunteerWork VARCHAR(255) NOT NULL,
-    address VARCHAR(255) NOT NULL,
-    dateVolunteerWork DATETIME NOT NULL,
-    work_description TEXT NOT NULL,
-    date_at_create DATETIME DEFAULT CURRENT_TIMESTAMP
-);
 
 -- Tabela Facilitadores
 CREATE TABLE Facilitadores (

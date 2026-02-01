@@ -18,3 +18,5 @@ connection.connect((err) => {
 })
 
 module.exports = connection
+
+// Para projetos academicos
