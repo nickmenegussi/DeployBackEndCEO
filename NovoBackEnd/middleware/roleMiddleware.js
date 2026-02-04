@@ -1,4 +1,4 @@
-const { default: appError } = require("../errors/AppError")
+import appError from "../errors/AppError.js"
 
 const verifyPermission = (allowedRoles) => {
   return (req, res, next) => {
@@ -16,4 +16,4 @@ const verifyPermission = (allowedRoles) => {
     next()
   }
 }
-module.exports = verifyPermission;
+export default verifyPermission;

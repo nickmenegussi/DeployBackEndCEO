@@ -1,3 +1,4 @@
+import { FacilitatorModel } from "../models/FacilitatorModel.js"
 import { UserModel } from "../models/UserModel.js"
 
 export const UserRepository = {
@@ -17,19 +18,23 @@ export const UserRepository = {
         })
     },
 
-    create(data){
-        return UserModel.create(data)
+    async create(data){
+        return await UserModel.create(data)
     },
 
-    update(id, data){
+    update(idUser, data){
         return UserModel.update(data, {
-            where: {id}
+            where: {idUser}
         })
     },
 
-    delete(id){
-        return UserModel.destroy({
-            where: {id}
+    async delete(idUser){
+        await FacilitatorModel.destroy({
+            where: {User_idUser: idUser}
+        })
+
+        return await UserModel.destroy({
+            where: {idUser}
         })
     }
 }

@@ -8,7 +8,7 @@ export async function findAllController(req, res, next) {
         return res.status(200).json({
             message: "Palestras listadas com sucesso.",
             success: true,
-            data: lecture,
+            ...lecture
         })
     } catch (err){
         next(err)

@@ -9,10 +9,10 @@ export const FacilitatorModel = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    User_idUser: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
+    // User_idUser: {
+    //   type: DataTypes.INTEGER,
+    //   allowNull: false,
+    // },
     description: {
       type: DataTypes.TEXT,
       allowNull: false,

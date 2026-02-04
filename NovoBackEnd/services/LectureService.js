@@ -9,7 +9,9 @@ export async function listLecture(){
     throw appError("Nenhuma palestra encontrada", 404)
   }
 
-  return lectureResult.map(lectureSerializer)
+  return {
+    data: lectureResult
+  }
 }
 
 export async function getLectureById(idLecture) {
@@ -73,5 +75,26 @@ export async function register(data) {
     video_url: lecture.video_url,
     yearOfPublication: lecture.yearOfPublication,
   };
+}
+
+export async function updateLectureNameService(idLecture, nameLecture) {
+}
+
+export async function updateLectureDateService(idLecture, dateLecture) {
+}
+
+export async function updateLectureTimeService(idLecture, timeLecture) {
+}
+
+export async function updateLectureDescriptionService(idLecture, description) {
+}
+
+export async function updateLectureLinkUrlService(idLecture, link_url) {
+}
+
+export async function updateLectureVideoUrlService(idLecture, video_url) {
+}
+
+export async function deleteLectureService(idLecture) {
 }
 
