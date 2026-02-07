@@ -19,8 +19,10 @@ export const LectureRepository = {
         return await LectureModel.create(data)
     }, 
 
-    update(id, data) {
-
+    async update(idLecture, data) {
+        return await LectureModel.update(data, {
+            where: {idLecture}
+        })
     },
 
     async delete(id) {

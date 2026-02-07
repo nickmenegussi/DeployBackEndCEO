@@ -5,7 +5,7 @@ import verifyPermission from "../middleware/roleMiddleware.js"
 import upload from "../middleware/uploadImage.js"
 
 const router = Router()
-router.get('/user', authMiddleware, getAllController)
+router.get('/user', getAllController)
 router.get('/user/:idUser', authMiddleware, verifyPermission(['admin', 'SuperAdmin', 'User']), getByIdController)
 
 router.patch('/user/nameUser',authMiddleware , updateNameUserController)

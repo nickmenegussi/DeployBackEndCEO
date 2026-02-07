@@ -4,6 +4,8 @@ import cors from "cors";
 import lectureRoutes from "./routes/LectureRoutes.js";
 import authRoutes from "./routes/AuthRoutes.js";
 import userRoutes from "./routes/UserRoutes.js"
+import libraryRoutes from "./routes/LibraryRoutes.js"
+
 import { connectedDataBase } from "./config/sequelize.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
@@ -16,6 +18,7 @@ app.use(express.json());
 app.use("/lectures", lectureRoutes);
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes)
+app.use("/library", libraryRoutes)
 
 app.get("/", (req, res) => {
   res.send("Bem-vindo à minha API!");

@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
 
-export const BookModel = sequelize.define("Book", {
+export const BookModel = sequelize.define("BookModel", {
   idLibrary: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -17,6 +17,7 @@ export const BookModel = sequelize.define("Book", {
   },
   image: {
     type: DataTypes.TEXT,
+    allowNull: true
   },
   overviewBook: {
     type: DataTypes.STRING(200),

@@ -90,7 +90,7 @@ export async function updateNameUserService(idUser, nameUser) {
 
 export async function updateUserEmailService(idUser, emailUser) {
   if(!emailUser.trim()) {
-    throw appError("Nome de usuário é obrigatório", 400)
+    throw appError("Email de usuário é obrigatório", 400)
   }
 
   const affectedRows = await UserRepository.update(idUser, {
