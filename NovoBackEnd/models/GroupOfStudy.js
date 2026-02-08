@@ -1,37 +1,46 @@
 import { DataTypes } from "sequelize";
-import sequelize from "../config/sequelize";
+import sequelize from "../config/sequelize.js";
 
-export const GroupOfStudyModel = sequelize.define("GropOfStudyModel",{
-    idGroupOfStudy: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-    }, idFacilitador: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    }, nameStudy: {
-        type: DataTypes.STRING(150),
-        allowNull: false,
-    }, description: {
-        type: DataTypes.STRING(200),
-        allowNull: false,
-    }, DayOfWeek: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
-    }, StartTime: {
-        type: DataTypes.TIME,
-        allowNull: false,
-    }, EndTime: {
-        type: DataTypes.TIME,
-        allowNull: false,
-    }, TypeGroup: {
-        type: DataTypes.ENUM('ESDE', 'MEDIUNICO', 'EVANGELIZACAO', 'CIEDE'),
-        defaultValue: 'Outros',
-        allowNull: false,
-    }, Requirements: {
-        type: DataTypes.TEXT,
-    }, 
+export const GroupOfStudyModel = sequelize.define("GroupOfStudyModel", {
+  idGroupOfStudy: {
+    type: DataTypes.BIGINT,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  IdFacilitador: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  NameStudy: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+  },
+  Description: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+  },
+  DayOfWeek: {
+    type: DataTypes.STRING(20),
+    allowNull: true,
+  },
+  StartTime: {
+    type: DataTypes.TIME,
+    allowNull: false,
+  },
+  EndTime: {
+    type: DataTypes.TIME,
+    allowNull: false,
+  },
+  TypeGroup: {
+    type: DataTypes.ENUM("ESDE", "MEDIUNICO", "EVANGELIZACAO", "CIEDE", "OUTROS"),
+    allowNull: true,
+  },
+  Requirements: {
+    type: DataTypes.TEXT,
+  },
 }, {
-    tableName: 'GroupOfStudy',
-    timestamps: true
-})
+  tableName: "GroupOfstudy",
+  timestamps: true,
+  createdAt: "CreatedAt",
+  updatedAt: false,
+});

@@ -21,6 +21,13 @@ export const FavoriteModel = sequelize.define(
   {
     tableName: "favorite",
     timestamps: true,
+    createdAt: "date_at_create",
     updatedAt: false,
+    indexes: [
+      {
+        unique: true,
+        fields: ["User_idUser", "Book_idLibrary"],
+      },
+    ],
   }
 );

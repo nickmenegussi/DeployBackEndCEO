@@ -10,37 +10,36 @@ export const LectureModel = sequelize.define(
       autoIncrement: true,
     },
     nameLecture: {
-      type: DataTypes.STRING(200),
+      type: DataTypes.STRING(255),
       allowNull: false,
     },
     dateLecture: {
-      type: DataTypes.DATEONLY,
+      type: DataTypes.DATE,
       allowNull: false,
     },
     timeLecture: {
       type: DataTypes.TIME,
       allowNull: false,
-    }, description: {
-      type: DataTypes.STRING(150),
+    },
+    description: {
+      type: DataTypes.STRING(255),
       allowNull: false,
     },
     link_url: {
       type: DataTypes.STRING(255),
+      allowNull: true,
     },
     video_url: {
       type: DataTypes.TEXT,
+      allowNull: true,
     },
-    // userId: {
-    //   type: DataTypes.INTEGER,
-    //   allowNull: false,
-    // },
     yearOfPublication: {
-      type: DataTypes.TINYINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
   },
-  { 
-    tableName: 'lecture',
+  {
+    tableName: "lecture",
     timestamps: true,
-  },
+  }
 );

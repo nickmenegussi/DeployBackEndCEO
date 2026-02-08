@@ -20,7 +20,7 @@ export const BookModel = sequelize.define("BookModel", {
     allowNull: true
   },
   overviewBook: {
-    type: DataTypes.STRING(200),
+    type: DataTypes.TEXT,
     allowNull: false,
   },
   curiosityBook: {
@@ -54,6 +54,6 @@ export const BookModel = sequelize.define("BookModel", {
   },
 },  {
     tableName: "Book",
-    timestamps: false, // você não criou createdAt / updatedAt
+    timestamps: true, // você não criou createdAt / updatedAt
   }
 );

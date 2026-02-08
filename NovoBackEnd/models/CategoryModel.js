@@ -13,9 +13,15 @@ export const CategoryModel = sequelize.define(
       type: DataTypes.STRING(100),
       allowNull: false,
     },
+    User_idUser: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
   },
   {
     tableName: "category",
     timestamps: true,
+    createdAt: "create_at",
+    updatedAt: false,
   }
 );

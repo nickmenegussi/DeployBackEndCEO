@@ -10,17 +10,16 @@ export const UserModel = sequelize.define(
       autoIncrement: true,
     },
     nameUser: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING(255),
       allowNull: false,
-      unique: true,
     },
     email: {
-      type: DataTypes.STRING(150),
+      type: DataTypes.STRING(255),
       allowNull: false,
       unique: true,
     },
     password: {
-      type: DataTypes.STRING(150),
+      type: DataTypes.STRING(255),
       allowNull: false,
     },
     image_profile: {
@@ -33,7 +32,8 @@ export const UserModel = sequelize.define(
       defaultValue: "User",
     },
   },
-  { tableName: 'user',
+  {
+    tableName: "user",
     timestamps: true,
-  },
+  }
 );

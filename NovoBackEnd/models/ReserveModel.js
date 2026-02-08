@@ -9,13 +9,36 @@ export const ReserveModel = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    Cart_idCart: {
+    User_idUser: {
       type: DataTypes.INTEGER,
       allowNull: false,
+    },
+    Book_idLibrary: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    quantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 1,
+    },
+    reserveDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    expirationDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    status: {
+      type: DataTypes.ENUM("active", "expired", "cancelled"),
+      defaultValue: "active",
     },
   },
   {
     tableName: "reserves",
     timestamps: true,
+    createdAt: "date_at_create",
+    updatedAt: false,
   }
 );

@@ -22,9 +22,15 @@ export const NotificationModel = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    expoPushToken: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   {
     tableName: "notifications",
     timestamps: true,
+    createdAt: "created_at",
+    updatedAt: false,
   }
 );

@@ -33,5 +33,7 @@ export const TopicModel = sequelize.define(
   {
     tableName: "topic",
     timestamps: true,
+    createdAt: "created_at",
+    updatedAt: false,
   }
 );

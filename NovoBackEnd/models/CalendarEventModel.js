@@ -13,24 +13,28 @@ export const CalendarEventModel = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: false,
     },
+    link: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
     description: {
       type: DataTypes.TEXT,
       allowNull: false,
     },
     start: {
-      type: DataTypes.STRING(100), // Original uses strings for these in body, usually ISO or custom format
+      type: DataTypes.DATE,
       allowNull: false,
     },
     end: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.DATE,
       allowNull: false,
     },
     attachment: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.TEXT,
       allowNull: true,
     },
     dateEvent: {
-      type: DataTypes.DATEONLY, // Original name 'dateEvent'
+      type: DataTypes.DATE,
       allowNull: false,
     },
     User_idUser: {
@@ -40,6 +44,6 @@ export const CalendarEventModel = sequelize.define(
   },
   {
     tableName: "calendarevents",
-    timestamps: true,
+    timestamps: false,
   }
 );

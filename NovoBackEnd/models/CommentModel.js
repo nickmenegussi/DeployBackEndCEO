@@ -25,5 +25,7 @@ export const CommentModel = sequelize.define(
   {
     tableName: "comments",
     timestamps: true,
+    createdAt: "createdDate",
+    updatedAt: false,
   }
 );

@@ -18,7 +18,7 @@ export const CartModel = sequelize.define(
       allowNull: false,
     },
     action: {
-      type: DataTypes.ENUM("reserva", "emprestimo"),
+      type: DataTypes.ENUM("reservar", "emprestar"),
       allowNull: false,
     },
     quantity: {
@@ -30,5 +30,7 @@ export const CartModel = sequelize.define(
   {
     tableName: "cart",
     timestamps: true,
+    createdAt: "added_at",
+    updatedAt: false,
   }
 );

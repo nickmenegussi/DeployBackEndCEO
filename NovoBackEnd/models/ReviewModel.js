@@ -25,5 +25,7 @@ export const ReviewModel = sequelize.define(
   {
     tableName: "reviewsociety",
     timestamps: true,
+    createdAt: "create_at",
+    updatedAt: false,
   }
 );

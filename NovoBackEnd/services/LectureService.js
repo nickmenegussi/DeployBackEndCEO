@@ -20,7 +20,7 @@ export async function getLectureById(idLecture) {
 
   const existsLecture = await LectureRepository.findById(idLecture)
 
-  if(!existsLecture) throw appError("Nenhuma palestra encontrada.", 404)
+  if(!existsLecture || existsLecture.length === 0) throw appError("Nenhuma palestra encontrada.", 404)
 
   return {
     idLecture: existsLecture.idLecture,

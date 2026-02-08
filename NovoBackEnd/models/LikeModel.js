@@ -21,6 +21,13 @@ export const LikeModel = sequelize.define(
   {
     tableName: "likes",
     timestamps: true,
+    createdAt: "created_at",
     updatedAt: false,
+    indexes: [
+      {
+        unique: true,
+        fields: ["Post_idPost", "User_idUser"],
+      },
+    ],
   }
 );
