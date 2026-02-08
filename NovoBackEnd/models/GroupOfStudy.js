@@ -1,5 +1,5 @@
 import { DataTypes } from "sequelize";
-import sequelize from "../../src/config/sequelize";
+import sequelize from "../config/sequelize";
 
 export const GroupOfStudyModel = sequelize.define("GropOfStudyModel",{
     idGroupOfStudy: {
