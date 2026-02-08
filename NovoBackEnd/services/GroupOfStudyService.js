@@ -91,7 +91,7 @@ export async function updateGroupNameService(idGroupOfStudy, NameStudy) {
 
   await fetchGroupOrFail(idGroupOfStudy);
 
-  await GroupOfStudyRepository.update(idGroupOfStudy, { NameStudy });
+  await GroupOfStudyRepository.update(idGroupOfStudy, NameStudy);
 
   return {message: "Nome atualizado com sucesso.", success: true};
 }
@@ -101,7 +101,7 @@ export async function updateGroupDescriptionService(idGroupOfStudy, Description)
 
   await fetchGroupOrFail(idGroupOfStudy);
 
-  await GroupOfStudyRepository.update(idGroupOfStudy, { Description });
+  await GroupOfStudyRepository.update(idGroupOfStudy, Description );
 
   return { message: "Descrição atualizada com sucesso." , success: true};
 }
@@ -111,7 +111,7 @@ export async function updateGroupDayOfWeekService(idGroupOfStudy, DayOfWeek) {
 
   await fetchGroupOrFail(idGroupOfStudy);
 
-  await GroupOfStudyRepository.update(idGroupOfStudy, { DayOfWeek });
+  await GroupOfStudyRepository.update(idGroupOfStudy, DayOfWeek);
 
   return { message: "Dia da semana atualizado com sucesso." , success: true };
 }
@@ -121,7 +121,7 @@ export async function updateGroupStartTimeService(idGroupOfStudy, StartTime) {
 
   await fetchGroupOrFail(idGroupOfStudy);
 
-  await GroupOfStudyRepository.update(idGroupOfStudy, { StartTime });
+  await GroupOfStudyRepository.update(idGroupOfStudy, StartTime);
 
   return {message: "Horário de começo da palestra atualizado com sucesso." , success: true };
 }
@@ -131,7 +131,7 @@ export async function updateGroupEndTimeService(idGroupOfStudy, EndTime) {
 
   await fetchGroupOrFail(idGroupOfStudy);
 
-  await GroupOfStudyRepository.update(idGroupOfStudy, { EndTime });
+  await GroupOfStudyRepository.update(idGroupOfStudy, EndTime )
 
   return {message: "Horário do fim da palestra atualizado com sucesso." , success: true };
 }
@@ -141,7 +141,7 @@ export async function updateGroupTypeService(idGroupOfStudy, TypeGroup) {
 
   await fetchGroupOrFail(idGroupOfStudy);
 
-  await GroupOfStudyRepository.update(idGroupOfStudy, { TypeGroup });
+  await GroupOfStudyRepository.update(idGroupOfStudy, TypeGroup);
 
   return { success: true };
 }
@@ -151,7 +151,7 @@ export async function updateGroupRequirementsService(idGroupOfStudy, Requirement
 
   await fetchGroupOrFail(idGroupOfStudy);
 
-  await GroupOfStudyRepository.update(idGroupOfStudy, { Requirements });
+  await GroupOfStudyRepository.update(idGroupOfStudy, Requirements);
 
   return {message: "Arquivos atualizado com sucesso." , success: true };
 }
