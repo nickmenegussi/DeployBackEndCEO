@@ -37,12 +37,22 @@ export async function createVolunteerWorkController(req, res, next) {
 export async function updateVolunteerWorkController(req, res, next) {
   try {
     const { idVolunteerWork } = req.params;
-    const result = await updateVolunteerWorkFieldService(idVolunteerWork, req.body);
+    const { nameVolunteerWork, description, dateStart, dateEnd, location, responsible, status_permission } = req.body
+    const result = await updateVolunteerWorkFieldService(idVolunteerWork, 
+      nameVolunteerWork,
+      description,
+      dateStart,
+      dateEnd,
+      location,
+      responsible,
+      status_permission
+    );
     return res.status(200).json(result);
   } catch (error) {
     next(error);
   }
 }
+export const updateVolunteerWorkFieldController = updateVolunteerWorkController;
 
 export async function deleteVolunteerWorkController(req, res, next) {
   try {

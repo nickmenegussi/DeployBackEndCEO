@@ -8,7 +8,17 @@ import {
 export async function createReviewSocietyController(req, res, next) {
   try {
     const userId = req.data.id;
-    const result = await createReviewSocietyService({ ...req.body, userId });
+    const {description, rating} = req.body
+
+    const data = {
+      description,
+      rating
+    }
+
+    const result = await createReviewSocietyService( 
+      data,
+      userId 
+    );
     return res.status(201).json(result);
   } catch (error) {
     next(error);
@@ -29,7 +39,16 @@ export async function updateReviewSocietyController(req, res, next) {
   try {
     const { idReviewSociety } = req.params;
     const userId = req.data.id;
-    const result = await updateReviewSocietyService(idReviewSociety, userId, req.body);
+    const {description, rating } = req.body
+
+    const data = {
+      description,
+      rating
+    }
+    
+    const result = await updateReviewSocietyService(idReviewSociety, userId, 
+      data
+    );
     return res.status(200).json(result);
   } catch (error) {
     next(error);

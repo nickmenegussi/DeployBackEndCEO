@@ -13,11 +13,8 @@ export async function loginService(email, password) {
 
   const userResult = await UserRepository.findByEmail(email);
 
-  if (!userResult) throw appError("Usuário não existe.", 404);
-
-  const passwordMatch = await bcrypt.compare(password, userResult.password);
-
-  if (!passwordMatch) throw appError("Credenciais inválidas", 401);
+  if (!userResult || !await bcrypt.compare(password, userResult.password)) 
+    throw appError("Email ou senha inválidos", 401);
 
   const token = jwt.sign(
     { id: userResult.idUser, email: userResult.email, role: userResult.status_permission },

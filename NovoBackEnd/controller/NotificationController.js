@@ -40,7 +40,16 @@ export async function viewAllNotificationsController(req, res, next) {
 export async function createNotificationController(req, res, next) {
   try {
     const User_idUser = req.body.User_idUser || req.data.id;
-    const result = await createNotificationService({ ...req.body, User_idUser });
+
+    const {message, expoPushToken} = req.body
+
+    const data = {
+      message,
+      expoPushToken,
+      User_idUser
+    }
+
+    const result = await createNotificationService(data);
     return res.status(201).json(result);
   } catch (error) {
     next(error);
@@ -80,3 +89,6 @@ export async function deleteNotificationController(req, res, next) {
     next(error);
   }
 }
+
+// Aliases for route exports
+export const viewNotificationsByUserController = getUserNotificationsController;

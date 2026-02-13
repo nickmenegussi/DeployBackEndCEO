@@ -14,6 +14,8 @@ export async function getAllReservesController(req, res, next) {
   }
 }
 
+export const viewAllReservesController = getAllReservesController;
+
 export async function getReservesByUserController(req, res, next) {
   try {
     const loggedUserId = req.data.id;
@@ -26,16 +28,27 @@ export async function getReservesByUserController(req, res, next) {
     next(error);
   }
 }
+export const viewReservesByUserController = getReservesByUserController;
 
 export async function processReservationController(req, res, next) {
   try {
     const User_idUser = req.data.id;
-    const result = await processReservationService(req.body, User_idUser);
+    const {idCart, Book_idLibrary, quantity} = req.body
+    const item = {    
+      idCart,
+      Book_idLibrary,
+      quantity
+    }
+    const result = await processReservationService(
+      item,
+      User_idUser
+    );
     return res.status(201).json(result);
   } catch (error) {
     next(error);
   }
 }
+export const reserveBookController = processReservationController;
 
 export async function deleteReserveController(req, res, next) {
   try {

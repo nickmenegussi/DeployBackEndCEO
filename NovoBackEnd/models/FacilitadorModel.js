@@ -1,8 +1,8 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
 
-export const FacilitatorModel = sequelize.define(
-  "FacilitatorModel",
+export const FacilitadorModel = sequelize.define(
+  "FacilitadorModel",
   {
     idFacilitadores: {
       type: DataTypes.INTEGER,

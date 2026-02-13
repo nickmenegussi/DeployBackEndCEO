@@ -20,11 +20,16 @@ export async function createPostController(req, res, next) {
   try {
     const User_idUser = req.data.id;
     const image = req.file ? req.file.filename : null;
-    const result = await createPostService({
-      ...req.body,
+    const {content, Topic_idTopic} = req.body
+
+    const data = {
+      content,
+      Topic_idTopic,
       User_idUser,
       image,
-    });
+    }
+
+    const result = await createPostService(data);
     return res.status(201).json(result);
   } catch (error) {
     next(error);

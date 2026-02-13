@@ -28,7 +28,16 @@ export async function viewLoansByUserController(req, res, next) {
 export async function processLoanController(req, res, next) {
   try {
     const User_idUser = req.data.id;
-    const result = await processLoanService(req.body, User_idUser);
+
+    const {idCart, Book_idLibrary, quantity} = req.body
+
+    const data = {
+      idCart,
+      Book_idLibrary,
+      quantity
+    }
+
+    const result = await processLoanService(data, User_idUser);
     return res.status(201).json(result);
   } catch (error) {
     next(error);

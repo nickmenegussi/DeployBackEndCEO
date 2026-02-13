@@ -1,4 +1,4 @@
-import { FacilitatorModel } from "../models/FacilitatorModel.js"
+import { FacilitadorModel } from "../models/FacilitadorModel.js"
 import { UserModel } from "../models/UserModel.js"
 
 export const UserRepository = {
@@ -14,7 +14,8 @@ export const UserRepository = {
 
     findByEmail(email) {
         return UserModel.findOne({
-            where: {email}
+            where: {email},
+            attributes: {exclude: ['password']}
         })
     },
 
@@ -29,7 +30,7 @@ export const UserRepository = {
     },
 
     async delete(idUser){
-        await FacilitatorModel.destroy({
+        await FacilitadorModel.destroy({
             where: {User_idUser: idUser}
         })
 

@@ -35,13 +35,17 @@ export async function registerController(req, res) {
   try {
     const imageFile = req.file;
     let imageUrl = null;
+    const { nameUser, email, password, status_permission } = req.body
 
     if (imageFile) {
       imageUrl = await uploadImage(imageFile);
     }
 
     const user = await register({
-      ...req.body,
+      nameUser,
+      email,
+      password,
+      status_permission,
       image_profile: imageUrl,
     });
 

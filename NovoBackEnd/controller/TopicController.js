@@ -29,8 +29,11 @@ export async function createTopicController(req, res, next) {
   try {
     const User_idUser = req.data.id;
     const image = req.file ? req.file.filename : null;
+    const {title, description} = req.body
+
     const result = await createTopicService({
-      ...req.body,
+      title,
+      description,
       User_idUser,
       image,
     });

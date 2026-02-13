@@ -1,4 +1,4 @@
-async function sendPushNotification(expoPushToken, message) {
+export default async function sendPushNotification(expoPushToken, message) {
   const payload = {
     to: expoPushToken,
     sound: "default",
@@ -17,5 +17,3 @@ async function sendPushNotification(expoPushToken, message) {
   const data = await response.json()
   return data
 }
-
-module.exports = sendPushNotification
