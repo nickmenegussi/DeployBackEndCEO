@@ -31,7 +31,7 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 // Middlewares de Segurança
-app.use(helmet()); // Adiciona headers de segurança (protege contra clicks, scripts maliciosos, etc)
+app.use(helmet()); // Adiciona headers de segurança (protege contra clicks, scrpts maliciosos, etc)
 
 const limiter = rateLimit({
 	windowMs: 15 * 60 * 1000, // 15 minutos
@@ -50,22 +50,20 @@ app.use("/lectures", lectureRoutes);
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use("/library", libraryRoutes);
-app.use("/calendar", calendarEventRoutes); // Prefix is handled inside for /calendar path
-app.use("/cart", cartRoutes);          // Prefix is handled inside for /cart path
-app.use("/category", categoryRoutes);      // Prefix is handled inside for /category path
-app.use("/comments", commentRoutes);       // Prefix is handled inside for /comments path
-app.use("/facilitadores", facilitatorRoutes);   // Prefix is handled inside for /facilitadores path
-app.use("/favorite", favoriteRoutes);      // Prefix is handled inside for /favorite path
-app.use("/groupOfStudy", groupOfStudyRoutes);  // Prefix is handled inside for /groupOfStudy path
-app.use("/topic", topicRoutes);         // Prefix is handled inside for /topic path
-app.use("/loan", loanRoutes);          // Prefix is handled inside for /loan path
-app.use("/postMessages", postRoutes);          // Prefix is handled inside for /postMessages path
-app.use("/reserves", reserveRoutes);       // Prefix is handled inside for /reserves path
-app.use("/work", volunteerWorkRoutes); // Prefix is handled inside for /work path
-app.use("/reviewSociety", reviewSocietyRoutes); // Prefix is handled inside for /reviewSociety path
-app.use("/notifications", notificationRoutes);  // Prefix is handled inside for /notifications and /admin paths
-
-app.post("/user/register", userRoutes); // Just in case, but already in userRoutes
+app.use("/calendar", calendarEventRoutes); 
+app.use("/cart", cartRoutes);          
+app.use("/category", categoryRoutes);       
+app.use("/comments", commentRoutes);       
+app.use("/facilitadores", facilitatorRoutes);   
+app.use("/favorite", favoriteRoutes);      
+app.use("/groupOfStudy", groupOfStudyRoutes);  
+app.use("/topic", topicRoutes);         
+app.use("/loan", loanRoutes);          
+app.use("/postMessages", postRoutes);          
+app.use("/reserves", reserveRoutes);       
+app.use("/work", volunteerWorkRoutes); 
+app.use("/reviewSociety", reviewSocietyRoutes); 
+app.use("/notifications", notificationRoutes);  
 
 app.get("/", (req, res) => {
   res.send("Bem-vindo à minha API!");

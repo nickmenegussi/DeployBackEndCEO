@@ -4,9 +4,9 @@ import { deleteService, getAllService, getByIdService, register, updateNameUserS
 
 export async function getByIdController(req, res, next) {
   try {
-    const {idUser} = req.params
+    const {idUser} = parseInt(req.params)
     const roleUser = req.data.role
-    const idUserLogged = req.data.id
+    const idUserLogged = parseInt(req.data.id)
 
     const userByIdResult = await getByIdService(idUser, roleUser, idUserLogged)
 
@@ -34,8 +34,8 @@ export async function getAllController(req, res, next) {
 export async function registerController(req, res) {
   try {
     const imageFile = req.file;
-    let imageUrl = null;
-    const { nameUser, email, password, status_permission } = req.body
+    let imageUrl;
+    const { nameUser, email, password } = req.body
 
     if (imageFile) {
       imageUrl = await uploadImage(imageFile);
@@ -45,15 +45,11 @@ export async function registerController(req, res) {
       nameUser,
       email,
       password,
-      status_permission,
+      status_permission: 'User',
       image_profile: imageUrl,
     });
 
-    return res.status(201).json({
-      success: true,
-      message: "Usuário cadastrado com sucesso",
-      data: user,
-    });
+    return res.status(201).json(user);
   } catch (error) {
     return res.status(400).json({
       success: false,
@@ -64,7 +60,7 @@ export async function registerController(req, res) {
 
 export async function updateNameUserController(req, res, next) {
   try {
-    const idUser = req.data.id
+    const idUser = parseInt(req.data.id)
     const { nameUser } = req.body
 
     const nameUserUpdated = await updateNameUserService(idUser, nameUser)
@@ -79,7 +75,7 @@ export async function updateNameUserController(req, res, next) {
 
 export async function updateUserEmailController(req, res, next) {
   try {
-    const idUser = req.data.id
+    const idUser = parseInt(req.data.id)
     const { email } = req.body
 
     const nameUserUpdated = await updateUserEmailService(idUser, email)
@@ -94,7 +90,7 @@ export async function updateUserEmailController(req, res, next) {
 
 export async function updateUserPasswordController(req, res, next) {
   try {
-    const idUser = req.data.id
+    const idUser = parseInt(req.data.id)
     const { newPassword,  currentPassword, confirmedPassword} = req.body
 
     const nameUserUpdated = await updateUserPasswordService(idUser, newPassword, currentPassword, confirmedPassword)
@@ -109,7 +105,7 @@ export async function updateUserPasswordController(req, res, next) {
 
 export async function updateUserForgotPasswordController(req, res, next) {
   try {
-    const idUser = req.data.id
+    const idUser = parseInt(parseInt(req.data.id))
     const { email,  newPassword} = req.body
 
     const nameUserUpdated = await updateUserForgotPasswordService(idUser, email, newPassword)
@@ -122,9 +118,23 @@ export async function updateUserForgotPasswordController(req, res, next) {
   }
 }
 
+// export async function updateUserForgotPasswordController(req, res, next) {
+//   try {
+//     const { email, otp, newPassword, confirmedPassword } = req.body
+
+//     const result = await updateUserForgotPasswordService(email, otp, newPassword, confirmedPassword)
+
+//     return res.status(200).json({
+//       ...result
+//     })
+//   } catch (error) {
+//     next(error)
+//   }
+// }
+
 export async function updateUserImageProfileController(req, res, next) {
   try {
-    const idUser = req.data.id
+    const idUser = parseInt(req.data.id)
     const imageFilename = req.file ? req.file.filename : null
 
     const imageProfileUpdated = await updateUserImageProfileService(idUser, imageFilename)
@@ -139,10 +149,10 @@ export async function updateUserImageProfileController(req, res, next) {
 
 export async function deleteController(req, res, next) {
   try {
-    const {idUser} = req.params
+    const idUser = parseInt(req.params.idUser)
     const roleUser = req.data.role
-    const idUserLogged = req.data.id
-
+    const idUserLogged = parseInt(req.data.id)
+    
     const userDelete = await deleteService(idUser, roleUser, idUserLogged)
     
     return res.status(200).json({

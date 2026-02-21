@@ -26,8 +26,8 @@ export async function viewCartByUserService(idUser, idLibrary) {
   };
 }
 
-export async function updateActionService(idCart, action) {
-  if (!action || !idCart) {
+export async function updateActionService(idCart, User_idUser, action) {
+  if (!action || !idCart || !User_idUser) {
     throw appError("Preencha todos os campos.", 400);
   }
 
@@ -36,7 +36,11 @@ export async function updateActionService(idCart, action) {
     throw appError("Não foi possível encontrar o respectivo carrinho.", 404);
   }
 
-  const result = await CartRepository.update(idCart, { action });
+  if (existingCart.User_idUser !== User_idUser) {
+    throw appError("Você não tem permissão para alterar este item.", 403);
+  }
+
+  const result = await CartRepository.update(idCart, User_idUser, { action });
 
   return {
     success: true,
@@ -93,13 +97,17 @@ export async function createCartService(User_idUser, Book_idLibrary, action, qua
   };
 }
 
-export async function deleteCartService(idCart) {
+export async function deleteCartService(idCart, User_idUser) {
   const existingCart = await CartRepository.findById(idCart);
   if (!existingCart) {
     throw appError("Infelizmente, o item ainda não foi adicionado para o carrinho ser removido.", 404);
   }
 
-  const result = await CartRepository.delete(idCart);
+  if (existingCart.User_idUser !== User_idUser) {
+    throw appError("Você não tem permissão para excluir este item.", 403);
+  }
+
+  const result = await CartRepository.delete(idCart, User_idUser);
 
   return {
     message: "Carrinho deletado com sucesso",

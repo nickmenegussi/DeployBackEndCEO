@@ -12,6 +12,8 @@ import {
 } from "../controller/UserController.js";
 import authMiddleware from "../middleware/authMidleware.js";
 import verifyPermission from "../middleware/roleMiddleware.js";
+import validate from "../middleware/validateMiddleware.js";
+import { registerSchema } from "../validations/AuthValidation.js";
 // import upload from "../multerConfig/multer.js"
 
 const router = Router();
@@ -19,13 +21,13 @@ const router = Router();
 router.get("/user/:userId", authMiddleware, verifyPermission(["admin", "SuperAdmin", "User"]), getByIdController);
 router.get("/user", authMiddleware, verifyPermission(["admin", "SuperAdmin"]), getAllController);
 
-router.post("/user/register", registerController);
+router.post("/user/register", validate(registerSchema), registerController);
 
 router.patch("/user/nameUser", authMiddleware, updateNameUserController);
 router.patch("/user/password", authMiddleware, updateUserPasswordController);
 router.patch("/user/forgot-password", updateUserForgotPasswordController);
 router.patch("/user/picture", authMiddleware, updateUserImageProfileController);
 
-router.delete("/user/:idUser/delete", authMiddleware, verifyPermission(["SuperAdmin", "admin"]), deleteController);
+router.delete("/user/:idUser/delete", authMiddleware, verifyPermission(["SuperAdmin", "admin", "User"]), deleteController);
 
 export default router;

@@ -19,6 +19,16 @@ export const AuthRepository = {
         });
     },
 
+    // async findOtpByEmail(email) {
+    //     return await OtpModel.findOne({
+    //         where: {
+    //             email,
+    //         }, 
+    //         attributes: ['otp', 'expiresAt'],
+    //         order: [['createdAt', 'DESC']]
+    //     });
+    // },
+
     async deleteExpiredOtps() {
         return await OtpModel.destroy({
             where: {

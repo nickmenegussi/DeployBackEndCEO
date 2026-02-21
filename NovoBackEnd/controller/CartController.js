@@ -31,7 +31,8 @@ export async function updateActionController(req, res, next) {
   try {
     const { id } = req.params;
     const { action } = req.body;
-    const result = await updateActionService(id, action);
+    const User_idUser = req.data.id;
+    const result = await updateActionService(id, User_idUser, action);
     return res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -68,7 +69,8 @@ export async function confirmCartController(req, res, next) {
 export async function deleteCartController(req, res, next) {
   try {
     const { idCart } = req.params;
-    const result = await deleteCartService(idCart);
+    const User_idUser = req.data.id;
+    const result = await deleteCartService(idCart, User_idUser);
     return res.status(200).json(result);
   } catch (error) {
     next(error);

@@ -4,6 +4,7 @@ import * as yup from 'yup';
 dotenv.config();
 
 const envSchema = yup.object({
+  NODE_ENV: yup.mixed().oneOf(['local', 'test', 'production']).required('A variável NODE_ENV é obrigatória no .env'),
   JWT_SECRET: yup.string().required('A variável JWT_SECRET é obrigatória no .env'),
   PORT: yup.number().default(3001),
   API_KEY_RESEND: yup.string().required('A variável API_KEY_RESEND é obrigatória para o envio de e-mails'),

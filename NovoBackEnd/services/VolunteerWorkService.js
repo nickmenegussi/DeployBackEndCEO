@@ -67,9 +67,9 @@ export async function createVolunteerWorkService(data) {
   };
 }
 
-export async function updateVolunteerWorkFieldService(idVolunteerWork, fieldData) {
-  if (!idVolunteerWork) {
-    throw appError("ID do trabalho voluntário é obrigatório", 400);
+export async function updateNameVolunteerWorkService(idVolunteerWork, nameVolunteerWork) {
+  if (!idVolunteerWork || !nameVolunteerWork) {
+    throw appError("Preencha todos os campos obrigatórios!", 400);
   }
 
   const exists = await VolunteerWorkRepository.findById(idVolunteerWork);
@@ -77,7 +77,7 @@ export async function updateVolunteerWorkFieldService(idVolunteerWork, fieldData
     throw appError(`O Trabalho voluntário com o id ${idVolunteerWork} não existe no nosso sistema.`, 404);
   }
 
-  const [affectedRows] = await VolunteerWorkRepository.update(idVolunteerWork, fieldData);
+  const [affectedRows] = await VolunteerWorkRepository.update(idVolunteerWork, { nameVolunteerWork });
 
   if (affectedRows === 0) {
     throw appError("Erro ao atualizar o trabalho voluntário ou dados iguais aos atuais.", 400);
@@ -88,9 +88,134 @@ export async function updateVolunteerWorkFieldService(idVolunteerWork, fieldData
   return {
     success: true,
     message: "Trabalho voluntário atualizado com sucesso.",
-    data: volunteerWorkResponseDTO(updatedWork),
+    data: updatedWork.length  
   };
 }
+
+export async function updateAddressVolunteerWorkService(idVolunteerWork, address) {
+  if (!idVolunteerWork || !address) {
+    throw appError("Preencha todos os campos obrigatórios!", 400);
+  }
+
+  const exists = await VolunteerWorkRepository.findById(idVolunteerWork);
+  if (!exists) {
+    throw appError(`O Trabalho voluntário com o id ${idVolunteerWork} não existe no nosso sistema.`, 404);
+  }
+
+  const [affectedRows] = await VolunteerWorkRepository.update(idVolunteerWork, { address });
+
+  if (affectedRows === 0) {
+    throw appError("Erro ao atualizar o trabalho voluntário ou dados iguais aos atuais.", 400);
+  }
+
+  const updatedWork = await VolunteerWorkRepository.findById(idVolunteerWork);
+
+  return {
+    success: true,
+    message: "Trabalho voluntário atualizado com sucesso.",
+    data: updatedWork.length  
+  };
+}
+
+export async function updateDateVolunteerWorkService(idVolunteerWork, dateVolunteerWork) {
+  if (!idVolunteerWork || !dateVolunteerWork) {
+    throw appError("Preencha todos os campos obrigatórios!", 400);
+  }
+
+  const exists = await VolunteerWorkRepository.findById(idVolunteerWork);
+  if (!exists) {
+    throw appError(`O Trabalho voluntário com o id ${idVolunteerWork} não existe no nosso sistema.`, 404);
+  }
+
+  const [affectedRows] = await VolunteerWorkRepository.update(idVolunteerWork, { dateVolunteerWork });
+
+  if (affectedRows === 0) {
+    throw appError("Erro ao atualizar o trabalho voluntário ou dados iguais aos atuais.", 400);
+  }
+
+  const updatedWork = await VolunteerWorkRepository.findById(idVolunteerWork);
+
+  return {
+    success: true,
+    message: "Trabalho voluntário atualizado com sucesso.",
+    data: updatedWork.length  
+  };
+}
+
+export async function updateWorkDescriptionVolunteerWorkService(idVolunteerWork, work_description) {
+  if (!idVolunteerWork || !work_description) {
+    throw appError("Preencha todos os campos obrigatórios!", 400);
+  }
+
+  const exists = await VolunteerWorkRepository.findById(idVolunteerWork);
+  if (!exists) {
+    throw appError(`O Trabalho voluntário com o id ${idVolunteerWork} não existe no nosso sistema.`, 404);
+  }
+
+  const [affectedRows] = await VolunteerWorkRepository.update(idVolunteerWork, { work_description });
+
+  if (affectedRows === 0) {
+    throw appError("Erro ao atualizar o trabalho voluntário ou dados iguais aos atuais.", 400);
+  }
+
+  const updatedWork = await VolunteerWorkRepository.findById(idVolunteerWork);
+
+  return {
+    success: true,
+    message: "Trabalho voluntário atualizado com sucesso.",
+    data: updatedWork.length  
+  };
+}
+
+export async function updateTimeVolunteerWorkService(idVolunteerWork, timeVolunteerWork) {
+  if (!idVolunteerWork || !timeVolunteerWork) {
+    throw appError("Preencha todos os campos obrigatórios!", 400);
+  }
+
+  const exists = await VolunteerWorkRepository.findById(idVolunteerWork);
+  if (!exists) {
+    throw appError(`O Trabalho voluntário com o id ${idVolunteerWork} não existe no nosso sistema.`, 404);
+  }
+
+  const [affectedRows] = await VolunteerWorkRepository.update(idVolunteerWork, { timeVolunteerWork });
+
+  if (affectedRows === 0) {
+    throw appError("Erro ao atualizar o trabalho voluntário ou dados iguais aos atuais.", 400);
+  }
+
+  const updatedWork = await VolunteerWorkRepository.findById(idVolunteerWork);
+
+  return {
+    success: true,
+    message: "Trabalho voluntário atualizado com sucesso.",
+    data: updatedWork.length  
+  };
+}
+export async function updateWorkDescriptionVolunteerWorkService(idVolunteerWork, work_description) {
+  if (!idVolunteerWork || !work_description) {
+    throw appError("Preencha todos os campos obrigatórios!", 400);
+  }
+
+  const exists = await VolunteerWorkRepository.findById(idVolunteerWork);
+  if (!exists) {
+    throw appError(`O Trabalho voluntário com o id ${idVolunteerWork} não existe no nosso sistema.`, 404);
+  }
+
+  const [affectedRows] = await VolunteerWorkRepository.update(idVolunteerWork, { work_description });
+
+  if (affectedRows === 0) {
+    throw appError("Erro ao atualizar o trabalho voluntário ou dados iguais aos atuais.", 400);
+  }
+
+  const updatedWork = await VolunteerWorkRepository.findById(idVolunteerWork);
+
+  return {
+    success: true,
+    message: "Trabalho voluntário atualizado com sucesso.",
+    data: updatedWork.length  
+  };
+}
+
 
 export async function deleteVolunteerWorkService(idVolunteerWork) {
   if (!idVolunteerWork) {

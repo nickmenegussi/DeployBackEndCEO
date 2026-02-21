@@ -14,9 +14,9 @@ import { LikeModel } from "./LikeModel.js";
 import { ReserveModel } from "./ReserveModel.js";
 import { CartModel } from "./CartModel.js";
 import { VolunteerWorkModel } from "./VolunteerWorkModel.js";
-import { FacilitatorModel } from "./FacilitatorModel.js";
 import { ReviewModel } from "./ReviewModel.js";
 import { OtpModel } from "./OtpModel.js";
+import { FacilitadorModel } from "./FacilitadorModel.js";
 
 // --- Associations ---
 
@@ -75,10 +75,10 @@ BookModel.hasMany(LoanModel, { foreignKey: "Book_idLibrary", as: "loans" });
 LoanModel.belongsTo(BookModel, { foreignKey: "Book_idLibrary", as: "book" });
 
 // Facilitadores & GroupOfStudy
-UserModel.hasOne(FacilitatorModel, { foreignKey: "User_idUser", as: "facilitator" });
-FacilitatorModel.belongsTo(UserModel, { foreignKey: "User_idUser", as: "user" });
-FacilitatorModel.hasMany(GroupOfStudyModel, { foreignKey: "IdFacilitador", as: "studyGroups" });
-GroupOfStudyModel.belongsTo(FacilitatorModel, { foreignKey: "IdFacilitador", as: "facilitator" });
+UserModel.hasOne(FacilitadorModel, { foreignKey: "User_idUser", as: "facilitator" });
+FacilitadorModel.belongsTo(UserModel, { foreignKey: "User_idUser", as: "user" });
+FacilitadorModel.hasMany(GroupOfStudyModel, { foreignKey: "IdFacilitador", as: "studyGroups" });
+GroupOfStudyModel.belongsTo(FacilitadorModel, { foreignKey: "IdFacilitador", as: "facilitator" });
 
 // Notifications
 UserModel.hasMany(NotificationModel, { foreignKey: "User_idUser", as: "notifications" });
@@ -105,7 +105,7 @@ export {
   ReserveModel,
   CartModel,
   VolunteerWorkModel,
-  FacilitatorModel,
+  FacilitadorModel,
   ReviewModel,
   OtpModel,
 };

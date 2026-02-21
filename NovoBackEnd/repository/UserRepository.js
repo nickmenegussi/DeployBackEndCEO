@@ -9,13 +9,17 @@ export const UserRepository = {
     },
 
     findById(id){
-        return UserModel.findByPk(id)
+        return UserModel.findByPk(id, {
+            attributes: {exclude: ['password']}
+        })
     },
-
-    findByEmail(email) {
+    
+    // criado para que possamos em algum momento pegar a senha
+    findByEmail(email, includePassword = false) {
+        const attributes = includePassword ? {} : { exclude: ['password'] };
         return UserModel.findOne({
             where: {email},
-            attributes: {exclude: ['password']}
+            attributes
         })
     },
 

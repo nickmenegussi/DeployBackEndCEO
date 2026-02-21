@@ -37,8 +37,8 @@ export const CartRepository = {
     return CartModel.create(data);
   },
 
-  update(idCart, data) {
-    return CartModel.update(data, { where: { idCart } });
+  update(idCart, User_idUser, data) {
+    return CartModel.update(data, { where: { idCart, User_idUser } });
   },
 
   updateByUserAndBook(idUser, idLibrary, data) {
@@ -47,8 +47,8 @@ export const CartRepository = {
     });
   },
 
-  delete(idCart) {
-    return CartModel.destroy({ where: { idCart } });
+  delete(idCart, User_idUser) {
+    return CartModel.destroy({ where: { idCart, User_idUser } });
   },
 
   async checkExistingLoan(User_idUser, Book_idLibrary) {
