@@ -191,31 +191,6 @@ export async function updateTimeVolunteerWorkService(idVolunteerWork, timeVolunt
     data: updatedWork.length  
   };
 }
-export async function updateWorkDescriptionVolunteerWorkService(idVolunteerWork, work_description) {
-  if (!idVolunteerWork || !work_description) {
-    throw appError("Preencha todos os campos obrigatórios!", 400);
-  }
-
-  const exists = await VolunteerWorkRepository.findById(idVolunteerWork);
-  if (!exists) {
-    throw appError(`O Trabalho voluntário com o id ${idVolunteerWork} não existe no nosso sistema.`, 404);
-  }
-
-  const [affectedRows] = await VolunteerWorkRepository.update(idVolunteerWork, { work_description });
-
-  if (affectedRows === 0) {
-    throw appError("Erro ao atualizar o trabalho voluntário ou dados iguais aos atuais.", 400);
-  }
-
-  const updatedWork = await VolunteerWorkRepository.findById(idVolunteerWork);
-
-  return {
-    success: true,
-    message: "Trabalho voluntário atualizado com sucesso.",
-    data: updatedWork.length  
-  };
-}
-
 
 export async function deleteVolunteerWorkService(idVolunteerWork) {
   if (!idVolunteerWork) {

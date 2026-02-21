@@ -2,7 +2,6 @@ import {
   getAllVolunteerWorkService,
   getVolunteerWorkByIdService,
   createVolunteerWorkService,
-  updateVolunteerWorkFieldService,
   deleteVolunteerWorkService,
 } from "../services/VolunteerWorkService.js";
 
@@ -33,26 +32,6 @@ export async function createVolunteerWorkController(req, res, next) {
     next(error);
   }
 }
-
-export async function updateVolunteerWorkController(req, res, next) {
-  try {
-    const { idVolunteerWork } = req.params;
-    const { nameVolunteerWork, description, dateStart, dateEnd, location, responsible, status_permission } = req.body
-    const result = await updateVolunteerWorkFieldService(idVolunteerWork, 
-      nameVolunteerWork,
-      description,
-      dateStart,
-      dateEnd,
-      location,
-      responsible,
-      status_permission
-    );
-    return res.status(200).json(result);
-  } catch (error) {
-    next(error);
-  }
-}
-export const updateVolunteerWorkFieldController = updateVolunteerWorkController;
 
 export async function deleteVolunteerWorkController(req, res, next) {
   try {

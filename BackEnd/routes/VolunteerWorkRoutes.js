@@ -3,7 +3,6 @@ import {
   getAllVolunteerWorkController,
   getVolunteerWorkByIdController,
   createVolunteerWorkController,
-  updateVolunteerWorkFieldController,
   deleteVolunteerWorkController,
 } from "../controller/VolunteerWorkController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -20,11 +19,11 @@ router.get("/work/:idVolunteerWork", authMiddleware, verifyPermission([ROLES.SUP
 
 router.post("/work/Create", authMiddleware, verifyPermission([ROLES.SUPER_ADMIN, ROLES.ADMIN]), validate(createVolunteerWorkSchema), createVolunteerWorkController);
 
-router.patch("/work/:idVolunteerWork/nameVolunteerWork", authMiddleware, verifyPermission([ROLES.SUPER_ADMIN, ROLES.ADMIN]), updateVolunteerWorkFieldController);
-router.patch("/work/:idVolunteerWork/address", authMiddleware, verifyPermission([ROLES.SUPER_ADMIN, ROLES.ADMIN]), updateVolunteerWorkFieldController);
-router.patch("/work/:idVolunteerWork/dateVolunteerWork", authMiddleware, verifyPermission([ROLES.SUPER_ADMIN, ROLES.ADMIN]), updateVolunteerWorkFieldController);
-router.patch("/work/:idVolunteerWork/work_description", authMiddleware, verifyPermission([ROLES.SUPER_ADMIN, ROLES.ADMIN]), updateVolunteerWorkFieldController);
-router.patch("/work/:idVolunteerWork/timeVolunteerWork", authMiddleware, verifyPermission([ROLES.SUPER_ADMIN, ROLES.ADMIN]), updateVolunteerWorkFieldController);
+// router.patch("/work/:idVolunteerWork/nameVolunteerWork", authMiddleware, verifyPermission([ROLES.SUPER_ADMIN, ROLES.ADMIN]), updateVolunteerWorkFieldController);
+// router.patch("/work/:idVolunteerWork/address", authMiddleware, verifyPermission([ROLES.SUPER_ADMIN, ROLES.ADMIN]), updateVolunteerWorkFieldController);
+// router.patch("/work/:idVolunteerWork/dateVolunteerWork", authMiddleware, verifyPermission([ROLES.SUPER_ADMIN, ROLES.ADMIN]), updateVolunteerWorkFieldController);
+// router.patch("/work/:idVolunteerWork/work_description", authMiddleware, verifyPermission([ROLES.SUPER_ADMIN, ROLES.ADMIN]), updateVolunteerWorkFieldController);
+// router.patch("/work/:idVolunteerWork/timeVolunteerWork", authMiddleware, verifyPermission([ROLES.SUPER_ADMIN, ROLES.ADMIN]), updateVolunteerWorkFieldController);
 
 router.delete("/work/:idVolunteerWork/delete", authMiddleware, verifyPermission([ROLES.SUPER_ADMIN, ROLES.ADMIN]), deleteVolunteerWorkController);
 
