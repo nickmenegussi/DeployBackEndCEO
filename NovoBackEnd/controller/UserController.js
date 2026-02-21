@@ -4,7 +4,7 @@ import { deleteService, getAllService, getByIdService, register, updateNameUserS
 
 export async function getByIdController(req, res, next) {
   try {
-    const {idUser} = parseInt(req.params)
+    const idUser = parseInt(req.params.userId || req.params.idUser)
     const roleUser = req.data.role
     const idUserLogged = parseInt(req.data.id)
 
@@ -91,7 +91,7 @@ export async function updateUserEmailController(req, res, next) {
 export async function updateUserPasswordController(req, res, next) {
   try {
     const idUser = parseInt(req.data.id)
-    const { newPassword,  currentPassword, confirmedPassword} = req.body
+    const { newPassword, currentPassword, confirmedPassword } = req.body
 
     const nameUserUpdated = await updateUserPasswordService(idUser, newPassword, currentPassword, confirmedPassword)
 
@@ -106,7 +106,7 @@ export async function updateUserPasswordController(req, res, next) {
 export async function updateUserForgotPasswordController(req, res, next) {
   try {
     const idUser = parseInt(parseInt(req.data.id))
-    const { email,  newPassword} = req.body
+    const { email, newPassword } = req.body
 
     const nameUserUpdated = await updateUserForgotPasswordService(idUser, email, newPassword)
 
@@ -152,13 +152,13 @@ export async function deleteController(req, res, next) {
     const idUser = parseInt(req.params.idUser)
     const roleUser = req.data.role
     const idUserLogged = parseInt(req.data.id)
-    
+
     const userDelete = await deleteService(idUser, roleUser, idUserLogged)
-    
+
     return res.status(200).json({
       ...userDelete
     })
-    
+
   } catch (error) {
     next(error)
   }

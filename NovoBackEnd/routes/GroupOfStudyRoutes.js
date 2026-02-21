@@ -4,7 +4,12 @@ import {
   getGroupsByTypeController,
   createGroupController,
 } from "../controller/GroupOfStudyController.js";
-import authMiddleware from "../middleware/authMidleware.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+
+import { ROLES } from "../utils/roles.js";
+import verifyPermission from "../middleware/roleMiddleware.js";
+import validate from "../middleware/validateMiddleware.js";
+import { createGroupSchema } from "../validations/MiscValidation.js";
 
 const router = Router();
 
@@ -15,6 +20,6 @@ router.get("/groupOfStudy", getGroupsController);
 router.get("/groupOfStudy/:TypeGroup", getGroupsByTypeController);
 
 // Cria novo grupo (somente autenticado)
-router.post("/groupOfStudy", authMiddleware, createGroupController);
+router.post("/groupOfStudy", authMiddleware, verifyPermission([ROLES.SUPER_ADMIN, ROLES.ADMIN]), validate(createGroupSchema), createGroupController);
 
 export default router;

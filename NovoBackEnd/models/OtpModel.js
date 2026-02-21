@@ -14,7 +14,7 @@ export const OtpModel = sequelize.define(
       allowNull: false,
     },
     otp: {
-      type: DataTypes.STRING(10), // Assuming 4-6 digits, 10 is safe
+      type: DataTypes.STRING(255), // Aumentado para suportar o hash bcrypt
       allowNull: false,
     },
     expiresAt: {

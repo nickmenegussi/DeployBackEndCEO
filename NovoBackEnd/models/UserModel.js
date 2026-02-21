@@ -27,9 +27,9 @@ export const UserModel = sequelize.define(
       allowNull: true,
     },
     status_permission: {
-      type: DataTypes.ENUM("SuperAdmin", "admin", "User"),
+      type: DataTypes.ENUM('SuperAdmin', 'Admin', 'User'),
       allowNull: false,
-      defaultValue: "User",
+      defaultValue: 'User',
     },
   },
   {

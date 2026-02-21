@@ -23,6 +23,7 @@ import reserveRoutes from "./routes/ReserveRoutes.js";
 import volunteerWorkRoutes from "./routes/VolunteerWorkRoutes.js";
 import reviewSocietyRoutes from "./routes/ReviewSocietyRoutes.js";
 import notificationRoutes from "./routes/NotificationRoutes.js";
+import healthRoutes from "./routes/HealthRoutes.js";
 
 import { connectedDataBase } from "./config/sequelize.js";
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -34,10 +35,10 @@ const port = process.env.PORT || 3001;
 app.use(helmet()); // Adiciona headers de segurança (protege contra clicks, scrpts maliciosos, etc)
 
 const limiter = rateLimit({
-	windowMs: 15 * 60 * 1000, // 15 minutos
-	limit: 100, // Limita cada IP a 100 requisições por janela
-	standardHeaders: 'draft-7',
-	legacyHeaders: false,
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  limit: 100, // Limita cada IP a 100 requisições por janela
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
   message: "Muitas requisições vindas deste IP, tente novamente em 15 minutos."
 });
 app.use(limiter); // Impede ataques de força bruta
@@ -50,20 +51,21 @@ app.use("/lectures", lectureRoutes);
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use("/library", libraryRoutes);
-app.use("/calendar", calendarEventRoutes); 
-app.use("/cart", cartRoutes);          
-app.use("/category", categoryRoutes);       
-app.use("/comments", commentRoutes);       
-app.use("/facilitadores", facilitatorRoutes);   
-app.use("/favorite", favoriteRoutes);      
-app.use("/groupOfStudy", groupOfStudyRoutes);  
-app.use("/topic", topicRoutes);         
-app.use("/loan", loanRoutes);          
-app.use("/postMessages", postRoutes);          
-app.use("/reserves", reserveRoutes);       
-app.use("/work", volunteerWorkRoutes); 
-app.use("/reviewSociety", reviewSocietyRoutes); 
-app.use("/notifications", notificationRoutes);  
+app.use("/calendar", calendarEventRoutes);
+app.use("/cart", cartRoutes);
+app.use("/category", categoryRoutes);
+app.use("/comments", commentRoutes);
+app.use("/facilitadores", facilitatorRoutes);
+app.use("/favorite", favoriteRoutes);
+app.use("/groupOfStudy", groupOfStudyRoutes);
+app.use("/topic", topicRoutes);
+app.use("/loan", loanRoutes);
+app.use("/postMessages", postRoutes);
+app.use("/reserves", reserveRoutes);
+app.use("/work", volunteerWorkRoutes);
+app.use("/reviewSociety", reviewSocietyRoutes);
+app.use("/notifications", notificationRoutes);
+app.use("/", healthRoutes); // Registra a rota de /health e monitoramento
 
 app.get("/", (req, res) => {
   res.send("Bem-vindo à minha API!");

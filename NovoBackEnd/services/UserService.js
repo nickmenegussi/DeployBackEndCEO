@@ -3,6 +3,7 @@ import appError from "../errors/AppError.js";
 import { UserRepository } from "../repository/UserRepository.js";
 import { AuthRepository } from "../repository/AuthRepository.js";
 import bcrypt from "bcrypt";
+import { ROLES } from "../utils/roles.js";
 
 export async function getAllService() {
   const userResult = await UserRepository.findAll();
@@ -23,8 +24,8 @@ export async function getByIdService(idUser, roleUser, dataUserLogged) {
   }
 
   if (
-    roleUser !== "Admin" &&
-    roleUser !== "SuperAdmin" &&
+    roleUser !== ROLES.ADMIN &&
+    roleUser !== ROLES.SUPER_ADMIN &&
     dataUserLogged !== idUser
   ) {
     throw appError("Você não tem permissão para acessar esse usuário", 401);
@@ -52,8 +53,8 @@ export async function register(data) {
   const exisits = await UserRepository.findByEmail(email, true);
 
   if (exisits) {
-      // Mensagem genérica para evitar enumeração de usuários
-      throw new Error("Erro ao processar o cadastro. Verifique os dados ou tente outro e-mail.");
+    // Mensagem genérica para evitar enumeração de usuários
+    throw new Error("Erro ao processar o cadastro. Verifique os dados ou tente outro e-mail.");
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -62,7 +63,7 @@ export async function register(data) {
     nameUser,
     email,
     password: hashedPassword,
-    status_permission: status_permission || 'User',
+    status_permission: status_permission || ROLES.USER,
     image_profile: image_profile || null,
   });
 
@@ -74,7 +75,7 @@ export async function register(data) {
 }
 
 export async function updateNameUserService(idUser, nameUser) {
-  if(!nameUser.trim()) {
+  if (!nameUser.trim()) {
     throw appError("Nome de usuário é obrigatório", 400)
   }
 
@@ -82,19 +83,19 @@ export async function updateNameUserService(idUser, nameUser) {
     nameUser: nameUser
   })
 
-  if(affectedRows.length === 0) {
+  if (affectedRows.length === 0) {
     throw appError("Usuário não encontrado ou nome igual ao atual", 404)
   }
 
   return {
     message: "Sucesso ao alterar nome de usuário",
-    succes: true,
+    success: true,
     affectedRows: affectedRows
   }
 }
 
 export async function updateUserEmailService(idUser, emailUser) {
-  if(!emailUser.trim()) {
+  if (!emailUser.trim()) {
     throw appError("Email de usuário é obrigatório", 400)
   }
 
@@ -102,31 +103,31 @@ export async function updateUserEmailService(idUser, emailUser) {
     email: emailUser
   })
 
-  if(affectedRows.length === 0) {
+  if (affectedRows.length === 0) {
     throw appError("Usuário não encontrado ou nome igual ao atual", 404)
   }
 
   return {
     message: "Sucesso ao alterar o email de usuário",
-    succes: true,
+    success: true,
     affectedRows: affectedRows
   }
 }
 
 export async function updateUserPasswordService(idUser, newPassword, currentPassword, confirmedPassword) {
-  if(!idUser || !newPassword || !currentPassword || !confirmedPassword) {
+  if (!idUser || !newPassword || !currentPassword || !confirmedPassword) {
     throw appError("Preencha todos os campos de cadastro", 400)
   }
 
   const userResult = await UserRepository.findById(idUser, true)
 
-  if(!userResult) throw appError("Usuario não encontrado. Verifique os dados e tente novamente.", 404)
+  if (!userResult) throw appError("Usuario não encontrado. Verifique os dados e tente novamente.", 404)
 
   const passwordMatch = await bcrypt.compare(currentPassword, userResult.password)
 
-  if(!passwordMatch) throw appError("Senha atual incorreta", 400)
+  if (!passwordMatch) throw appError("Senha atual incorreta", 400)
 
-  if(newPassword !== confirmedPassword) throw appError("A nova senha digitada não coincide com a confirmada. Tente novamente!", 400)
+  if (newPassword !== confirmedPassword) throw appError("A nova senha digitada não coincide com a confirmada. Tente novamente!", 400)
 
   const hashedPassword = await bcrypt.hash(newPassword, 10)
 
@@ -134,7 +135,7 @@ export async function updateUserPasswordService(idUser, newPassword, currentPass
     password: hashedPassword
   })
 
-  if(affectedRows[0] === 0) {
+  if (affectedRows[0] === 0) {
     throw appError("Não foi possível alterar a senha", 400)
   }
 
@@ -195,7 +196,7 @@ export async function updateUserImageProfileService(idUser, imageFilename) {
     throw appError(
       "Usuario não encontrado. Verifique os dados e tente novamente.",
       404,
-  );
+    );
 
   const affectedRows = await UserRepository.update(idUser, {
     image_profile: imageFilename || null,
@@ -220,8 +221,8 @@ export async function deleteService(idUser, roleUser, idUserLogged) {
     throw appError("Preencha todos os campos obrigatórios!", 400);
   }
   if (
-    roleUser !== "Admin" &&
-    roleUser !== "SuperAdmin" &&
+    roleUser !== ROLES.ADMIN &&
+    roleUser !== ROLES.SUPER_ADMIN &&
     idUserLogged !== idUser
   ) {
     throw appError("Você não tem permissão para deletar esse usuário", 401);

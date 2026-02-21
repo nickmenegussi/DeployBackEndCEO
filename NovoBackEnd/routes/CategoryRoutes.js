@@ -4,14 +4,18 @@ import {
   getTopicByCategoryController,
   createCategoryController,
 } from "../controller/CategoryController.js";
-import authMiddleware from "../middleware/authMidleware.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 import verifyPermission from "../middleware/roleMiddleware.js";
+
+import { ROLES } from "../utils/roles.js";
+import validate from "../middleware/validateMiddleware.js";
+import { createCategorySchema } from "../validations/ForumValidation.js";
 
 const router = Router();
 
 router.get("/category", authMiddleware, getCategoriesController);
-router.get("/category/:nameCategory", getTopicByCategoryController);
+router.get("/category/:nameCategory", authMiddleware, getTopicByCategoryController);
 
-router.post("/category", authMiddleware, createCategoryController);
+router.post("/category", authMiddleware, verifyPermission([ROLES.SUPER_ADMIN, ROLES.ADMIN]), validate(createCategorySchema), createCategoryController);
 
 export default router;

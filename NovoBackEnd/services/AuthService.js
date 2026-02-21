@@ -4,16 +4,16 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { AuthRepository } from "../repository/AuthRepository.js";
 import OtpGenerator from "otp-generator"
-import sendOtpEmail  from "./EmailService.js";
+import sendOtpEmail from "./EmailService.js";
 
 export async function loginService(email, password) {
-  if(!email || !password){
+  if (!email || !password) {
     throw appError("Preencha todos os campos de login!", 400)
   }
 
   const userResult = await UserRepository.findByEmail(email, true); // true para incluir password
 
-  if (!userResult || !await bcrypt.compare(password, userResult.password)) 
+  if (!userResult || !await bcrypt.compare(password, userResult.password))
     throw appError("Email ou senha inválidos", 401);
 
   const token = jwt.sign(
@@ -35,15 +35,15 @@ export async function loginService(email, password) {
 }
 
 export async function generateOtpService(email) {
-  if(!email){
+  if (!email) {
     throw appError("Preencha todos os campos", 400)
   }
 
   await AuthRepository.deleteExpiredOtps()
 
   const existsUser = await UserRepository.findByEmail(email)
-  
-  if(!existsUser) {
+
+  if (!existsUser) {
     // Retornamos sucesso mesmo se não existir para evitar enumeração de e-mails
     return {
       message: "Se o e-mail estiver cadastrado, você receberá um código de recuperação."
@@ -61,28 +61,33 @@ export async function generateOtpService(email) {
 
   const expiresAt = new Date()
   expiresAt.setMinutes(expiresAt.getMinutes() + 5)
-  
+
   await AuthRepository.generateOtp(email, hashedOtp, expiresAt)
 
   await sendOtpEmail(email, existsUser.nameUser, otp)
 
   return {
-   message: "Se o e-mail estiver cadastrado, você receberá um código de recuperação."
+    message: "Se o e-mail estiver cadastrado, você receberá um código de recuperação."
   }
 }
 
 export async function verificationOtpService(email, otp) {
+  if (!email || !otp) throw appError("Preencha todos os campos", 400)
 
-  if(!email || !otp) throw appError("Preencha todos os campos", 400)
+  const otpInformation = await AuthRepository.findOtpByEmail(email)
 
-  const resultOtp = await AuthRepository.findOtpByEmailAndOtp(email, otp)
-  const otpInformation = resultOtp
+  if (!otpInformation) throw appError("Código não encontrado ou e-mail inválido", 404)
+
+  const isMatch = await bcrypt.compare(otp, otpInformation.otp)
+
+  if (!isMatch) throw appError("Código inválido", 400)
+
   const currentTime = new Date()
 
-  if(currentTime > new Date(otpInformation.expiresAt)) throw appError('OTP expirado', 400)
+  if (currentTime > new Date(otpInformation.expiresAt)) throw appError('Código expirado', 400)
 
   return {
-    message: 'OTP verificado com sucesso!',
+    message: 'Código verificado com sucesso!',
     success: true
   }
 }
@@ -91,21 +96,14 @@ export async function verificationOtpService(email, otp) {
 
 //   if(!email || !otp) throw appError("Preencha todos os campos", 400)
 
-//   const otpInformation = await AuthRepository.findOtpByEmail(email)
-  
-//   if (!otpInformation) throw appError("Código não encontrado ou e-mail inválido", 404)
-
-//   const isMatch = await bcrypt.compare(otp, otpInformation.otp)
-  
-//   if (!isMatch) throw appError("Código inválido", 400)
-
+//   const otpInformation = await AuthRepository.findOtpByEmailAndOtp(email, otp)
+//   const otpInformation = resultOtp
 //   const currentTime = new Date()
 
-//   if(currentTime > new Date(otpInformation.expiresAt)) throw appError('Código expirado', 400)
+//   if(currentTime > new Date(otpInformation.expiresAt)) throw appError('OTP expirado', 400)
 
 //   return {
-//     message: 'Código verificado com sucesso!',
+//     message: 'OTP verificado com sucesso!',
 //     success: true
 //   }
-
 // }

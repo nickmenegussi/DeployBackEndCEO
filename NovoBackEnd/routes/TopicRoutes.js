@@ -6,15 +6,18 @@ import {
   updateTopicController,
   deleteTopicController,
 } from "../controller/TopicController.js";
-import authMiddleware from "../middleware/authMidleware.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 // import upload from '../multerConfig/multer.js'
+
+import validate from "../middleware/validateMiddleware.js";
+import { createTopicSchema } from "../validations/ForumValidation.js";
 
 const router = Router();
 
 router.get("/topic", authMiddleware, viewAllTopicController);
 router.get("/topic/:topicId", authMiddleware, viewOnlyTopicByIdController);
 
-router.post("/topic/create", authMiddleware, createTopicController);
+router.post("/topic/create", authMiddleware, validate(createTopicSchema), createTopicController);
 
 router.patch("/topic/:topicId/title", authMiddleware, updateTopicController);
 router.patch("/topic/:topicId/description", authMiddleware, updateTopicController);
