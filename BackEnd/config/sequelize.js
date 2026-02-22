@@ -4,14 +4,14 @@ import chalk from "chalk";
 import { Sequelize } from "sequelize";
 
 const sequelize = new Sequelize(
-    process.env.DB_NAME,
-    process.env.DB_USER,
-    process.env.DB_PASS,
+    process.env.MYSQL_ADDON_DB,
+    process.env.MYSQL_ADDON_USER,
+    process.env.MYSQL_ADDON_PASSWORD,
     {
-        host: process.env.HOST,
+        host: process.env.MYSQL_ADDON_HOST,
         dialect: "mysql",
         logging: false,
-        port: Number(process.env.DB_PORT),
+        port: Number(process.env.MYSQL_ADDON_PORT) || 3306,
         // Configurações críticas para Vercel/Serverless
         pool: {
             max: 5,         // Limite máximo de conexões por instância

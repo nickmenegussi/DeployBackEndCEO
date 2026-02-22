@@ -11,11 +11,11 @@ const envSchema = yup.object({
   JWT_SECRET: yup.string().required('A variável JWT_SECRET é obrigatória'),
   PORT: yup.number().default(3001),
   API_KEY_RESEND: yup.string().required('A variável API_KEY_RESEND é obrigatória para o envio de e-mails'),
-  DB_NAME: yup.string().required('A variável DB_NAME é obrigatória'),
-  DB_USER: yup.string().required('A variável DB_USER é obrigatória'),
-  DB_PASS: yup.string().required('A variável DB_PASS é obrigatória'),
-  HOST: yup.string().required('A variável HOST (host do banco) é obrigatória'),
-  DB_PORT: yup.number().default(3306),
+  MYSQL_ADDON_DB: yup.string().required('A variável MYSQL_ADDON_DB é obrigatória'),
+  MYSQL_ADDON_USER: yup.string().required('A variável MYSQL_ADDON_USER é obrigatória'),
+  MYSQL_ADDON_PASSWORD: yup.string().required('A variável MYSQL_ADDON_PASSWORD é obrigatória'),
+  MYSQL_ADDON_HOST: yup.string().required('A variável MYSQL_ADDON_HOST é obrigatória'),
+  MYSQL_ADDON_PORT: yup.number().default(3306),
 });
 
 let validatedEnv;
