@@ -71,12 +71,17 @@ app.get("/", (req, res) => {
   res.send("Bem-vindo à minha API!");
 });
 
+// Tente conectar ao banco de dados imediatamente se estiver na Vercel
+if (process.env.VERCEL === "1") {
+  connectedDataBase().catch(err => console.error("Erro na conexão inicial do BD:", err));
+}
+
 app.use(errorHandler);
 
-// Só inicia o servidor se não estivermos rodando testes
-if (process.env.NODE_ENV !== "test") {
+// Só inicia o servidor se não estivermos rodando testes e não estivermos na Vercel
+if (process.env.NODE_ENV !== "test" && process.env.VERCEL !== "1") {
   app.listen(port, async () => {
-    console.log(`🚀 Rodando na porta ${port}`);
+    console.log(`🚀 Rodando localmente na porta ${port}`);
     await connectedDataBase();
   });
 }
