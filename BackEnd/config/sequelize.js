@@ -1,6 +1,7 @@
 // Utilziando essa abordagem de DTO para que em js puro possa ter ORM.
 // 'importando as tabelas do bd para classes' 
 import chalk from "chalk";
+import mysql2 from "mysql2";
 import { Sequelize } from "sequelize";
 
 const sequelize = new Sequelize(
@@ -10,6 +11,7 @@ const sequelize = new Sequelize(
     {
         host: process.env.MYSQL_ADDON_HOST,
         dialect: "mysql",
+        dialectModule: mysql2, // Necessário para Vercel encontrar o driver
         logging: false,
         port: Number(process.env.MYSQL_ADDON_PORT) || 3306,
         // Configurações críticas para Vercel/Serverless
